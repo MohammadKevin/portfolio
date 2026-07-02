@@ -4,8 +4,19 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Mohammad Kevin - Fullstack Developer",
-  description: "A Backend Developer with a passion for building efficient and scalable web applications. With expertise in Node.js, Express, and MongoDB, I create robust APIs and seamless user experiences. Let's collaborate to bring your ideas to life!",
+  title: "Mohammad Kevin - Fullstack & Backend Developer",
+  description: "Portfolio of Mohammad Kevin, a Fullstack & Backend Developer specializing in high-performance APIs, database optimization, and scalable web applications using Node.js, Laravel, React, and Next.js.",
+  keywords: [
+    "Mohammad Kevin",
+    "Backend Developer",
+    "Fullstack Developer",
+    "Developer Malang",
+    "Indonesia",
+    "Node.js Developer",
+    "Laravel Developer",
+    "Next.js Portfolio",
+    "API Specialist"
+  ].join(", "),
 };
 
 export default function RootLayout({
@@ -15,7 +26,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className="antialiased font-sans bg-[#080b11] text-[#f4f4f7]">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const savedTheme = localStorage.getItem('kevin-portfolio-theme') || 'blue';
+                  if (savedTheme !== 'blue') {
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className="antialiased bg-background text-foreground min-h-screen transition-colors duration-500">
         <Navbar />
         {children}
         <Footer />
@@ -23,3 +50,4 @@ export default function RootLayout({
     </html>
   );
 }
+

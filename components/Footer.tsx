@@ -30,7 +30,7 @@ const socials = [
         href: "https://www.instagram.com/mhmdkevin_1/",
         icon: (
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
             </svg>
         ),
     },
@@ -38,13 +38,13 @@ const socials = [
 
 export default function Footer() {
     return (
-        <footer className="bg-[#041316] text-gray-400 border-t border-white/5">
+        <footer className="bg-background/80 text-gray-400 border-t border-white/5 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
                     {/* Brand Info */}
                     <div className="lg:col-span-2 flex flex-col gap-6">
                         <Link href="/" className="flex items-center gap-3 group w-fit">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#14b8a6] to-[#0ea5e9] rounded-xl flex items-center justify-center text-white font-extrabold text-xl group-hover:bg-[#0d9488] transition-all duration-300">
+                            <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center text-gray-950 font-extrabold text-xl hover:opacity-90 transition-all duration-300">
                                 M
                             </div>
                             <span className="font-extrabold text-white text-lg tracking-tight">
@@ -60,9 +60,9 @@ export default function Footer() {
                         <div className="flex flex-col gap-3 mt-2">
                             <a
                                 href="mailto:kvn4.200581@gmail.com"
-                                className="flex items-center gap-3 text-sm hover:text-[#14b8a6] transition-colors duration-300 w-fit"
+                                className="flex items-center gap-3 text-sm hover:text-primary transition-colors duration-300 w-fit"
                             >
-                                <svg className="w-4.5 h-4.5 text-[#14b8a6]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-4.5 h-4.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                                 kvn4.200581@gmail.com
@@ -71,9 +71,9 @@ export default function Footer() {
                                 href="https://wa.me/6282131588846"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 text-sm hover:text-[#14b8a6] transition-colors duration-300 w-fit"
+                                className="flex items-center gap-3 text-sm hover:text-primary transition-colors duration-300 w-fit"
                             >
-                                <svg className="w-4.5 h-4.5 text-[#14b8a6]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-4.5 h-4.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                 </svg>
                                 +62 821-3158-8846
@@ -89,7 +89,7 @@ export default function Footer() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label={s.label}
-                                    className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:border-[#14b8a6] hover:bg-[#14b8a6] text-gray-400 hover:text-black flex items-center justify-center transition-all duration-300 hover:-translate-y-1"
+                                    className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:border-primary hover:bg-primary text-gray-400 hover:text-gray-950 flex items-center justify-center transition-all duration-300 hover:-translate-y-1"
                                 >
                                     {s.icon}
                                 </a>
@@ -105,7 +105,17 @@ export default function Footer() {
                                 {links.map((link) => (
                                     <li key={link}>
                                         <a
-                                            href={link === "About Me" ? "#about" : link === "My Skills" ? "#process" : link === "Portfolio" ? "#portfolio" : link === "Process" ? "#process" : "#"}
+                                            href={
+                                                link === "About Me"
+                                                    ? "#about"
+                                                    : link === "My Skills" || link === "Process"
+                                                    ? "#process"
+                                                    : link === "Portfolio"
+                                                    ? "#portfolio"
+                                                    : link === "Backend API" || link === "Web Development" || link === "Database Management" || link === "System Architecture"
+                                                    ? "#services"
+                                                    : "#"
+                                            }
                                             className="text-sm hover:text-white transition-colors duration-300 inline-block hover:translate-x-1 transition-transform"
                                         >
                                             {link}
@@ -119,7 +129,7 @@ export default function Footer() {
             </div>
 
             {/* Copyright */}
-            <div className="border-t border-white/5 bg-[#020b0d]">
+            <div className="border-t border-white/5 bg-black/35">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p className="text-sm text-gray-500">
                         © {new Date().getFullYear()} Mohammad Kevin. All rights reserved.
@@ -133,3 +143,4 @@ export default function Footer() {
         </footer>
     );
 }
+

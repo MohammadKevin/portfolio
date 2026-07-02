@@ -1,13 +1,63 @@
 @import "tailwindcss";
 
 :root {
-  --background: #051a1d;
-  --foreground: #eff9f9;
-  --primary: #2dd4bf;
-  --secondary: #38bdf8;
-  --accent: #0f766e;
-  --card-bg: rgba(8, 38, 42, 0.55);
-  --border-color: rgba(255, 255, 255, 0.08);
+  --background: #030712; /* Deep slate space-navy */
+  --foreground: #f3f4f6;
+  --primary: #3b82f6; /* Electric Blue */
+  --primary-rgb: 59, 130, 246;
+  --secondary: #06b6d4; /* Neon Cyan */
+  --secondary-rgb: 6, 182, 212;
+  --accent: #1e3a8a;
+  --card-bg: rgba(15, 23, 42, 0.45); /* Frosty Slate-Navy */
+  --border-color: rgba(255, 255, 255, 0.06);
+  --accent-color: #3b82f6;
+  --accent-color-rgb: 59, 130, 246;
+  --accent-glow: rgba(59, 130, 246, 0.12);
+}
+
+[data-theme="indigo"] {
+  --background: #08071a; /* Very deep indigo dark */
+  --foreground: #f5f3ff;
+  --primary: #6366f1; /* Indigo */
+  --primary-rgb: 99, 102, 241;
+  --secondary: #a855f7; /* Purple */
+  --secondary-rgb: 168, 85, 247;
+  --accent: #4338ca;
+  --card-bg: rgba(15, 12, 42, 0.45);
+  --border-color: rgba(255, 255, 255, 0.06);
+  --accent-color: #6366f1;
+  --accent-color-rgb: 99, 102, 241;
+  --accent-glow: rgba(99, 102, 241, 0.12);
+}
+
+[data-theme="emerald"] {
+  --background: #03140b; /* Very deep emerald forest dark */
+  --foreground: #ecfdf5;
+  --primary: #10b981; /* Emerald */
+  --primary-rgb: 16, 185, 129;
+  --secondary: #06b6d4; /* Cyan */
+  --secondary-rgb: 6, 182, 212;
+  --accent: #047857;
+  --card-bg: rgba(8, 42, 25, 0.45);
+  --border-color: rgba(255, 255, 255, 0.06);
+  --accent-color: #10b981;
+  --accent-color-rgb: 16, 185, 129;
+  --accent-glow: rgba(16, 185, 129, 0.12);
+}
+
+[data-theme="rose"] {
+  --background: #14050b; /* Very deep rose wine dark */
+  --foreground: #fff1f2;
+  --primary: #f43f5e; /* Rose */
+  --primary-rgb: 244, 63, 94;
+  --secondary: #fb7185; /* Light rose */
+  --secondary-rgb: 251, 113, 133;
+  --accent: #be123c;
+  --card-bg: rgba(42, 8, 18, 0.45);
+  --border-color: rgba(255, 255, 255, 0.06);
+  --accent-color: #f43f5e;
+  --accent-color-rgb: 244, 63, 94;
+  --accent-glow: rgba(244, 63, 94, 0.12);
 }
 
 @theme inline {
@@ -16,6 +66,7 @@
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
   --color-accent: var(--accent);
+  --color-accent-color: var(--accent-color);
   --font-sans: var(--font-geist-sans), Inter, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
@@ -25,10 +76,8 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(circle at 10% 20%, rgba(45, 212, 191, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
   background-attachment: fixed;
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 /* Custom Scrollbar */
@@ -37,16 +86,54 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #051a1d;
+  background: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #0b343a;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #114c55;
+  background: rgba(var(--primary-rgb), 0.4);
+}
+
+/* Ambient glow blobs animation */
+.glow-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.16;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 0;
+  transition: all 0.8s ease-in-out;
+}
+
+@keyframes float-blob {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(40px, -60px) scale(1.15);
+  }
+  66% {
+    transform: translate(-30px, 30px) scale(0.9);
+  }
+}
+
+.animate-glow-1 {
+  animation: float-blob 14s ease-in-out infinite;
+}
+
+.animate-glow-2 {
+  animation: float-blob 18s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.animate-glow-3 {
+  animation: float-blob 22s ease-in-out infinite;
+  animation-delay: 4s;
 }
 
 /* Animations */
@@ -78,28 +165,92 @@ body {
 
 /* Custom Utilities */
 .glass {
-  background: rgba(6, 32, 36, 0.8);
+  background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
 }
 
 .glass-card {
-  background: rgba(8, 38, 42, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(45, 212, 191, 0.25);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  border-color: rgba(var(--primary-rgb), 0.25);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+  transform: translateY(-6px);
 }
 
 /* Custom Text styles */
-.text-gradient-teal {
-  background: linear-gradient(135deg, #2dd4bf 0%, #38bdf8 100%);
+.text-gradient-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* Floating Pill Navbar */
+.floating-nav-container {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  margin-top: 1.25rem;
+}
+
+.floating-nav {
+  border-radius: 9999px;
+  background: rgba(10, 15, 30, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Orbital Rings UI */
+@keyframes orbit-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.orbital-ring-1 {
+  position: absolute;
+  border: 1px dashed rgba(var(--primary-rgb), 0.25);
+  border-radius: 50%;
+  animation: orbit-rotate 35s linear infinite;
+}
+
+.orbital-ring-2 {
+  position: absolute;
+  border: 1px dashed rgba(var(--secondary-rgb), 0.15);
+  border-radius: 50%;
+  animation: orbit-rotate 50s linear infinite reverse;
+}
+
+/* Portfolio Hover Slide-Up Drawer */
+.portfolio-card-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.portfolio-drawer-hover {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(8, 12, 24, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  transform: translateY(101%);
+  transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 10;
+}
+
+.portfolio-card-hover:hover .portfolio-drawer-hover {
+  transform: translateY(0);
+}
+
+
