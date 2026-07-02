@@ -18,7 +18,22 @@ export default function Analytics() {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+
   useEffect(() => {
+    // Check if session is already authenticated
+    if (sessionStorage.getItem("kevin-analytics-auth") === "true") {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
     setLoading(true);
     fetch("/api/visit")
       .then((res) => res.json())
@@ -29,7 +44,7 @@ export default function Analytics() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [refreshKey]);
+  }, [refreshKey, isAuthenticated]);
 
   const totalVisits = visitors.length;
   const desktopCount = visitors.filter((v) => v.device === "Desktop").length;
@@ -61,6 +76,82 @@ export default function Analytics() {
     if (device === "Mobile") return "📱";
     return "📟";
   };
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (username === "kevin" && password === "kevin135") {
+      sessionStorage.setItem("kevin-analytics-auth", "true");
+      setIsAuthenticated(true);
+      setLoginError("");
+    } else {
+      setLoginError("Username atau password salah!");
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Background Ambient glows */}
+        <div className="absolute top-[15%] left-[-10%] w-[30rem] h-[30rem] bg-primary/10 glow-blob animate-glow-1" />
+        <div className="absolute bottom-[15%] right-[-10%] w-[30rem] h-[30rem] bg-secondary/10 glow-blob animate-glow-2" />
+
+        <div className="w-full max-w-md glass-card rounded-3xl p-8 border border-white/5 shadow-2xl relative z-10">
+          <div className="text-center mb-8">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:text-secondary mb-4 transition-colors group"
+            >
+              <svg className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              </svg>
+              Kembali ke Portfolio
+            </Link>
+            <h1 className="text-2xl font-black text-white">Area Terbatas</h1>
+            <p className="text-xs text-gray-400 mt-1">Masukkan kredensial untuk melihat analitik pengunjung.</p>
+          </div>
+
+          <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Username</label>
+              <input
+                type="text"
+                required
+                placeholder="Masukkan username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="px-4 py-3.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm text-white bg-white/5 focus:bg-white/10 transition-all w-full"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Password</label>
+              <input
+                type="password"
+                required
+                placeholder="Masukkan password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="px-4 py-3.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm text-white bg-white/5 focus:bg-white/10 transition-all w-full"
+              />
+            </div>
+
+            {loginError && (
+              <p className="text-xs font-bold text-rose-500 bg-rose-500/10 border border-rose-500/20 px-4 py-2.5 rounded-xl">
+                ⚠️ {loginError}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-4.5 bg-gradient-to-r from-primary to-secondary text-gray-955 font-bold rounded-xl shadow-lg shadow-primary/10 hover:shadow-primary/20 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 cursor-pointer text-center"
+            >
+              Masuk Dashboard
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background text-foreground pt-28 pb-16 relative overflow-hidden">
