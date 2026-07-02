@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-const dataDir = path.join(process.cwd(), "data");
-const filePath = path.join(dataDir, "visitors.json");
+const isVercel = process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+const filePath = isVercel
+  ? path.join("/tmp", "visitors.json")
+  : path.join(process.cwd(), "data", "visitors.json");
 
 function parseUserAgent(userAgent: string) {
   let device = "Desktop";
@@ -61,8 +63,9 @@ export async function POST(request: NextRequest) {
     const parsed = parseUserAgent(userAgent);
 
     // Initialize dir and file
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+    const dirPath = path.dirname(filePath);
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
     }
 
     let visitors = [];
