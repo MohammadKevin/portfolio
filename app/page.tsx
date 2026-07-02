@@ -200,6 +200,10 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(() => {
+    fetch("/api/visit", { method: "POST" }).catch(console.error);
+  }, []);
+
   const showToast = (msg: string, type: ToastType) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ msg, type });
