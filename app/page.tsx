@@ -200,6 +200,141 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const physicsRef = useRef({
+    offsetX: 0,
+    offsetY: 0,
+    vx: 0,
+    vy: 0,
+    isDragging: false,
+    dragStart: { x: 0, y: 0 },
+    lastTime: 0,
+  });
+
+  const animationFrameId = useRef<number | null>(null);
+
+  const animatePhysics = (time: number) => {
+    const state = physicsRef.current;
+    if (state.isDragging) return;
+    
+    if (!state.lastTime) {
+      state.lastTime = time;
+      animationFrameId.current = requestAnimationFrame(animatePhysics);
+      return;
+    }
+    
+    let dt = (time - state.lastTime) / 1000;
+    state.lastTime = time;
+    
+    if (dt <= 0) dt = 0.016;
+    if (dt > 0.03) dt = 0.03;
+
+    if (isNaN(state.offsetX) || isNaN(state.offsetY)) {
+      state.offsetX = 0;
+      state.offsetY = 0;
+      state.vx = 0;
+      state.vy = 0;
+      setOffsetX(0);
+      setOffsetY(0);
+      state.lastTime = 0;
+      animationFrameId.current = null;
+      return;
+    }
+
+    const k = 150;
+    const c = 7;
+
+    const ax = -k * state.offsetX - c * state.vx;
+    const ay = -k * state.offsetY - c * state.vy;
+
+    state.vx += ax * dt;
+    state.vy += ay * dt;
+    state.offsetX += state.vx * dt;
+    state.offsetY += state.vy * dt;
+
+    setOffsetX(state.offsetX);
+    setOffsetY(state.offsetY);
+
+    if (
+      Math.abs(state.offsetX) < 0.05 && Math.abs(state.vx) < 0.05 &&
+      Math.abs(state.offsetY) < 0.05 && Math.abs(state.vy) < 0.05
+    ) {
+      state.offsetX = 0;
+      state.offsetY = 0;
+      state.vx = 0;
+      state.vy = 0;
+      setOffsetX(0);
+      setOffsetY(0);
+      state.lastTime = 0;
+      animationFrameId.current = null;
+      return;
+    }
+
+    animationFrameId.current = requestAnimationFrame(animatePhysics);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    physicsRef.current.isDragging = true;
+    physicsRef.current.dragStart = { x: e.clientX, y: e.clientY };
+    physicsRef.current.vx = 0;
+    physicsRef.current.vy = 0;
+    setIsDragging(true);
+    
+    if (animationFrameId.current) {
+      cancelAnimationFrame(animationFrameId.current);
+      animationFrameId.current = null;
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!physicsRef.current.isDragging) return;
+    const dx = e.clientX - physicsRef.current.dragStart.x;
+    const dy = e.clientY - physicsRef.current.dragStart.y;
+
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const maxLength = 200;
+
+    let targetX = dx;
+    let targetY = dy;
+
+    if (distance > maxLength && distance > 0) {
+      targetX = (dx / distance) * maxLength;
+      targetY = (dy / distance) * maxLength;
+    }
+
+    if (targetY < -120) {
+      targetY = -120;
+    }
+
+    physicsRef.current.offsetX = targetX;
+    physicsRef.current.offsetY = targetY;
+
+    setOffsetX(targetX);
+    setOffsetY(targetY);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!physicsRef.current.isDragging) return;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    physicsRef.current.isDragging = false;
+    setIsDragging(false);
+    
+    physicsRef.current.lastTime = 0;
+    
+    if (animationFrameId.current) {
+      cancelAnimationFrame(animationFrameId.current);
+    }
+    animationFrameId.current = requestAnimationFrame(animatePhysics);
+  };
+
+  const lanyardLength = Math.sqrt(offsetX * offsetX + (335 + offsetY) * (335 + offsetY));
+  const lanyardAngle = -Math.atan2(offsetX, 335 + offsetY) * (180 / Math.PI);
+  const cardRotation = lanyardAngle * 0.9 + (isDragging ? 0 : -offsetX * 0.05);
+
   useEffect(() => {
     fetch("/api/visit", { method: "POST" }).catch(console.error);
   }, []);
@@ -265,7 +400,7 @@ export default function Home() {
     showToast("📋 Email berhasil disalin ke clipboard!", "success");
   };
 
-  // Filter projects based on category and search query
+
   const filteredProjects = portfolioItems.filter((item) => {
     const matchesCategory = activeCategory === "All" || item.type === activeCategory;
     const matchesSearch =
@@ -281,12 +416,12 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen overflow-hidden">
-      {/* Dynamic Ambient Background Blobs */}
+
       <div className="absolute top-[5%] left-[-15%] w-[35rem] h-[35rem] bg-primary/20 glow-blob animate-glow-1" />
       <div className="absolute top-[35%] right-[-15%] w-[40rem] h-[40rem] bg-secondary/15 glow-blob animate-glow-2" />
       <div className="absolute bottom-[10%] left-[50%] -translate-x-1/2 w-[35rem] h-[35rem] bg-primary/20 glow-blob animate-glow-3" />
 
-      {/* Toast Alert */}
+
       <div
         className={`fixed bottom-6 right-6 z-55 px-6 py-4 rounded-2xl text-white text-sm font-semibold shadow-2xl transition-all duration-300 flex items-center gap-3 ${
           toastVisible
@@ -297,13 +432,13 @@ export default function Home() {
         <span>{toast.msg}</span>
       </div>
 
-      {/* Hero Section */}
+
       <section
         id="home"
         className="relative min-h-screen flex items-center pt-28 pb-16 z-10"
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Intro Column */}
+
           <div className="flex flex-col gap-6">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-semibold px-4.5 py-2 rounded-full w-fit border border-primary/20">
               <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
@@ -322,7 +457,7 @@ export default function Home() {
               Halo, saya <span className="text-white font-semibold">Mohammad Kevin</span>. Saya membangun arsitektur web service yang aman, handal, dan berkinerja tinggi, berspesialisasi dalam Node.js, Laravel, dan optimalisasi database.
             </p>
 
-            {/* CTAs */}
+
             <div className="flex flex-wrap items-center gap-4 mt-2">
               <a
                 href="#contact"
@@ -338,7 +473,7 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Stats */}
+
             <div className="flex items-center gap-10 mt-8 pt-8 border-t border-white/5">
               {stats.map((s) => (
                 <div key={s.label} className="flex flex-col gap-1">
@@ -349,48 +484,181 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Overhauled Circular Orbital Profile Showcase */}
-          <div className="relative flex justify-center lg:justify-end">
-            <div className="relative w-80 h-80 lg:w-96 lg:h-96 flex items-center justify-center">
-              {/* Spinning dashes */}
-              <div className="orbital-ring-1 w-full h-full" />
-              <div className="orbital-ring-2 w-[85%] h-[85%]" />
+          <div className="relative flex justify-center lg:justify-end w-full font-sans">
+            <div className="relative w-full max-w-sm h-[480px] flex justify-center items-start overflow-visible select-none">
               
-              {/* Frosted circular profile photo container */}
-              <div className="relative w-64 h-64 lg:w-72 lg:h-72 rounded-full overflow-hidden border border-primary/25 p-2 bg-slate-950/70 shadow-2xl shadow-primary/10">
-                <div className="w-full h-full rounded-full overflow-hidden bg-slate-900">
-                  <img
-                    src="/images/logo.png"
-                    alt="Mohammad Kevin"
-                    onError={(e) => {
-                      e.currentTarget.src = "/images/foto.png";
-                    }}
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-108"
-                  />
-                </div>
-              </div>
-
-              {/* Floating Skill Badge 1 (Top Left) */}
-              <div className="absolute top-4 left-4 p-3 bg-slate-900/90 border border-white/10 rounded-2xl flex items-center gap-2 shadow-lg hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 select-none">
+              <div className="absolute top-10 left-2 p-3 bg-slate-900/90 border border-white/10 rounded-2xl flex items-center gap-2 shadow-lg hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 select-none z-10">
                 <span className="text-xl">⚙️</span>
                 <span className="text-[10px] font-bold text-white uppercase tracking-wider">NodeJS Expert</span>
               </div>
 
-              {/* Floating Skill Badge 2 (Bottom Right) */}
-              <div className="absolute bottom-8 right-0 p-3 bg-slate-900/90 border border-white/10 rounded-2xl flex items-center gap-2 shadow-lg hover:border-secondary/40 hover:-translate-y-1 transition-all duration-300 select-none">
+              <div className="absolute bottom-16 right-2 p-3 bg-slate-900/90 border border-white/10 rounded-2xl flex items-center gap-2 shadow-lg hover:border-secondary/40 hover:-translate-y-1 transition-all duration-300 select-none z-10">
                 <span className="text-xl">🗄️</span>
                 <span className="text-[10px] font-bold text-white uppercase tracking-wider">DB Optimizer</span>
+              </div>
+
+              <div
+                className="absolute origin-top bg-gradient-to-r from-slate-500 via-slate-300 to-slate-600 shadow-lg"
+                style={{
+                  left: "50%",
+                  top: "-300px",
+                  width: "8px",
+                  height: `${lanyardLength}px`,
+                  transform: `translateX(-50%) rotate(${lanyardAngle}deg)`,
+                  transition: isDragging ? "none" : "height 0.05s ease-out, transform 0.05s ease-out",
+                  zIndex: 20,
+                  borderRadius: "9999px"
+                }}
+              >
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_1px,rgba(0,0,0,0.15)_1px,rgba(0,0,0,0.15)_2px)] rounded-full" />
+
+                <div 
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[60%] w-5 h-7 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 border border-white/20 rounded-md shadow-md flex flex-col items-center justify-between py-1 animate-pulse"
+                  style={{ zIndex: 35 }}
+                >
+                  <div className="w-full h-[2px] bg-slate-500/50" />
+                  <div className="w-[10px] h-[10px] bg-slate-900 border border-white/10 rounded-full" />
+                </div>
+              </div>
+
+              <div
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+                className={`absolute w-[310px] h-[450px] origin-top rounded-[28px] bg-gradient-to-br from-slate-900/95 via-blue-950/85 to-slate-950/95 border-2 border-sky-400/40 shadow-[0_25px_60px_rgba(0,0,0,0.8),0_0_30px_rgba(14,165,233,0.15)] flex flex-col p-4.5 cursor-grab active:cursor-grabbing select-none ${
+                  isDragging ? "" : "transition-transform duration-75 ease-out"
+                }`}
+                style={{
+                  left: "50%",
+                  top: "35px",
+                  transform: `translate(calc(-50% + ${offsetX}px), ${offsetY}px) rotate(${cardRotation}deg)`,
+                  transformOrigin: "50% 0%",
+                  touchAction: "none",
+                  zIndex: 30
+                }}
+              >
+                <div className="absolute inset-0 rounded-[26px] bg-gradient-to-tr from-white/0 via-white/5 to-white/10 pointer-events-none z-10" />
+
+                <div className="w-10 h-2.5 bg-slate-950 rounded-full mx-auto mb-4 border border-white/5 shadow-inner opacity-20" />
+
+                <div className="flex items-center gap-3.5 mb-4 px-1">
+                  <div className="relative w-11 h-11 rounded-full bg-gradient-to-br from-slate-800 to-slate-950 border-2 border-sky-400/50 flex items-center justify-center shadow-lg shadow-sky-950/50 overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1/2 bg-white/5 skew-y-12" />
+                    <span className="text-sky-400 font-black text-lg italic tracking-tighter">KV</span>
+                  </div>
+
+                  <div className="flex flex-col text-left justify-center">
+                    <span className="text-[9px] font-black text-white/90 tracking-wider">KEVIN'S</span>
+                    <span className="text-[9px] font-black text-white/90 tracking-wider -mt-0.5">PROFESSIONAL ID</span>
+                    <span className="text-[7.5px] font-extrabold text-sky-400 tracking-wider mt-0.5 leading-none">
+                      SENIOR BACKEND &<br />FULLSTACK DEVELOPER
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 px-1 items-start">
+                  
+                  <div className="w-[42%] flex flex-col gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-slate-950/60 border border-white/5 flex items-center justify-center text-white/40 font-bold text-sm shadow-inner">
+                      M
+                    </div>
+
+                    <div className="flex items-center justify-center px-1.5 py-0.5 bg-sky-950/60 border border-sky-400/30 rounded-full text-[6px] font-bold text-sky-300 w-fit gap-1 shadow-sm">
+                      <span className="text-[8px] leading-none">⚙️</span>
+                      <span className="tracking-wider">NODEJS EXPERT</span>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
+                        NODE.JS
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
+                        <span className="text-[8px] font-black text-white leading-none">▲</span>
+                        NEXT.JS
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
+                        <span className="text-[8px] text-sky-400 leading-none">♒</span>
+                        TAILWIND
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-sm shadow-red-500/50" />
+                        LARAVEL
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
+                        <span className="text-[8px] text-sky-400 leading-none">🗄️</span>
+                        DATABASE OPT.
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
+                        <span className="text-[8px] text-sky-400 leading-none">🧪</span>
+                         QA & TESTING
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="w-[58%] flex flex-col items-stretch">
+                    <div className="relative w-[140px] h-[140px] mx-auto rounded-[20px] overflow-hidden border-2 border-sky-400/50 shadow-[0_0_15px_rgba(56,189,248,0.2)] bg-slate-950 flex items-center justify-center">
+                      <div className="absolute inset-0 bg-[linear-gradient(rgba(56,189,248,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.12)_1px,transparent_1px)] bg-[size:5px_5px] pointer-events-none" />
+                      
+                      <img
+                        src="/images/logo.png"
+                        alt="Mohammad Kevin"
+                        onError={(e) => {
+                          e.currentTarget.src = "/images/foto.png";
+                        }}
+                        className="w-full h-full object-cover z-10 select-none pointer-events-none grayscale"
+                      />
+                      
+                      <div className="absolute inset-0 border border-sky-400/20 rounded-[18px] pointer-events-none z-20" />
+                    </div>
+
+                    <div className="mt-2.5 flex flex-col text-left gap-0.5 px-1">
+                      <h4 className="text-[10.5px] font-black text-white uppercase tracking-wide">
+                        MOHAMMAD KEVIN
+                      </h4>
+                      <span className="text-[7.5px] font-bold text-white/60 leading-none">
+                        Backend & Fullstack Developer
+                      </span>
+                      <span className="text-[6.5px] font-extrabold text-sky-400 leading-none mt-0.5">
+                        Exp: 2 Years | Projects: 35+
+                      </span>
+                    </div>
+
+                    <div className="mt-3.5 flex justify-end px-1">
+                      <div className="bg-white p-0.5 rounded shadow-lg shadow-sky-950/20">
+                        <svg className="w-[42px] h-[42px]" viewBox="0 0 29 29" shapeRendering="crispEdges">
+                          <path fill="#000" d="M0 0h7v7H0zm2 2h3v3H2zm8-2h1v1h-1zm1 1h1v1h-1zm-1 1h1v1h-1zm3-3h7v7h-7zm2 2h3v3H20zm-8 4h1v1h-1zm1 1h1v1h-1zm4-1h3v1h-3zm0 2h1v1h-1zm2 0h1v1h-1zm-7 2v1h1v-1zm1 1h1v1h-1zm1-2h1v1h-1zm2 1h1v1h-1zm3-1h1v1h-1zm1 1h1v1h-1zm-5 2h1v1h-1zm1 1h1v1h-1zm4-1h1v1h-1zm-10 2h7v7H0zm2 2h3v3H2zm11-2h1v1h-1zm2 1h1v1h-1zm-1-1h1v1h-1zm3 2h1v1h-1zm1-1h1v1h-1zm-4 3h3v1h-3zm0 2h1v1h-1zm2 0h1v1h-1zm4-5h1v1h-1zm0 2h1v1h-1zm0 2h1v1h-1z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div className="mt-auto flex items-end justify-between px-1 mb-0.5">
+                  <div className="w-[100px] h-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-white/5 rounded-md flex items-center justify-center shadow-inner relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-950 absolute left-1 top-1" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-950 absolute right-1 top-1" />
+                  </div>
+
+                  <div className="w-[110px] h-3 bg-gradient-to-r from-indigo-500 via-purple-500 via-pink-500 via-cyan-500 to-blue-500 rounded border border-white/10 opacity-75 relative overflow-hidden shadow-[0_0_10px_rgba(168,85,247,0.15)] mb-1">
+                    <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,rgba(255,255,255,0.08)_2px,rgba(255,255,255,0.08)_4px)]" />
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* About Section */}
+
       <section id="about" className="py-28 relative z-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="glass-card rounded-3xl p-8 lg:p-16 flex flex-col lg:flex-row gap-16 items-center">
-            {/* Image Box */}
+
             <div className="relative group flex-shrink-0">
               <div className="absolute inset-0 border border-primary/15 rounded-2xl translate-x-2.5 translate-y-2.5 transition-transform" />
               <div className="relative w-64 h-64 lg:w-72 lg:h-72 rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-white/[0.02]">
@@ -405,7 +673,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Info Box */}
+
             <div className="flex flex-col gap-6">
               <div>
                 <p className="text-primary text-xs font-bold uppercase tracking-widest mb-2">
@@ -420,7 +688,7 @@ export default function Home() {
                 Saya adalah seorang Fullstack Developer dengan minat mendalam pada arsitektur API dan efisiensi database. Selama 2 tahun terakhir, saya telah mengembangkan berbagai sistem transaksi keuangan, aplikasi kasir (Point of Sale), serta arsip digital untuk organisasi. Saya senang memecahkan tantangan integrasi, mengoptimalkan query SQL, dan menerjemahkan logika backend yang rumit ke dalam visual dashboard frontend yang responsif dan mudah digunakan.
               </p>
 
-              {/* Actions */}
+
               <div className="flex flex-wrap items-center gap-4 mt-2">
                 <a
                   href="#portfolio"
@@ -444,7 +712,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Services Section */}
+
       <section id="services" className="py-28 relative z-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
@@ -476,7 +744,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Skills / Process Section */}
+
       <section id="process" className="py-28 relative z-10 bg-white/[0.01]">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
@@ -490,7 +758,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            {/* Tabs Sidebar */}
+
             <div className="lg:col-span-4 flex flex-col gap-3">
               {skillCategories.map((cat) => (
                 <button
@@ -511,7 +779,7 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Tab Details - Overhauled with Circular Progress Rings */}
+
             <div className="lg:col-span-8 bg-slate-950/20 border border-white/5 rounded-3xl p-8 lg:p-10 shadow-xl">
               <div className="flex flex-col gap-8">
                 <div>
@@ -573,7 +841,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Experience Timeline Section */}
+
       <section id="experience" className="py-28 relative z-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
@@ -589,13 +857,13 @@ export default function Home() {
           <div className="relative border-l border-white/10 max-w-4xl mx-auto pl-6 sm:pl-10 flex flex-col gap-12">
             {timelineItems.map((item, index) => (
               <div key={index} className="relative group">
-                {/* Timeline node */}
+
                 <div className="absolute -left-[31px] sm:-left-[47px] top-1.5 w-4 h-4 rounded-full bg-background border border-primary flex items-center justify-center transition-all duration-300 group-hover:scale-125">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping absolute" />
                   <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                 </div>
-                
-                {/* Timeline card */}
+
+
                 <div className="glass-card p-6 sm:p-8 rounded-2xl border border-white/5 hover:border-primary/20 flex flex-col gap-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
@@ -606,9 +874,9 @@ export default function Home() {
                     </div>
                     <span className="text-sm font-semibold text-gray-400">{item.company}</span>
                   </div>
-                  
+
                   <p className="text-gray-400 text-sm leading-relaxed mt-2">{item.desc}</p>
-                  
+
                   <div className="flex flex-wrap gap-2 mt-3">
                     {item.tech.map((t) => (
                       <span key={t} className="text-xs bg-white/5 border border-white/10 px-2 py-0.5 rounded-md text-gray-300">
@@ -623,7 +891,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Portfolio Section */}
+
       <section id="portfolio" className="py-28 relative z-10 bg-white/[0.01]">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
@@ -636,9 +904,9 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Filter & Search Bar */}
+
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-12 max-w-5xl mx-auto">
-            {/* Category Filters */}
+
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
               {["All", "Backend", "Frontend", "Fullstack"].map((cat) => (
                 <button
@@ -655,7 +923,7 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Search Input */}
+
             <div className="relative w-full md:w-80">
               <input
                 type="text"
@@ -670,7 +938,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Overhauled Portfolio Grid with Hover Slide-Up Drawers */}
+
           {filteredProjects.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredProjects.map((item, i) => (
@@ -678,14 +946,14 @@ export default function Home() {
                   key={i}
                   className="portfolio-card-hover group bg-slate-900/40 border border-white/5 rounded-3xl shadow-lg hover:border-primary/30 transition-all duration-300 flex flex-col h-96"
                 >
-                  {/* Visual Header / Cover */}
+
                   <div className={`h-full bg-gradient-to-br ${item.color} p-8 flex flex-col justify-between overflow-hidden relative z-0`}>
                     <div className="absolute inset-0 bg-background/45 backdrop-blur-[1px]" />
-                    
+
                     <span className="relative z-10 text-xs font-bold text-white/90 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full w-fit border border-white/10 uppercase tracking-wider">
                       {item.category}
                     </span>
-                    
+
                     <div className="relative z-10 flex flex-col gap-2">
                       <h3 className="text-2xl font-extrabold text-white leading-tight">{item.title}</h3>
                       <span className="text-[11px] text-primary font-semibold flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
@@ -697,19 +965,19 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Hover Slide-Up Drawer */}
+
                   <div className="portfolio-drawer-hover p-6 flex flex-col justify-between h-full">
                     <div className="flex flex-col gap-4">
                       <div>
                         <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{item.category}</span>
                         <h4 className="text-lg font-bold text-white mt-1">{item.title}</h4>
                       </div>
-                      
+
                       <p className="text-xs text-gray-400 leading-relaxed">
                         {item.desc}
                       </p>
 
-                      {/* Tech Badges */}
+
                       <div className="flex flex-wrap gap-1.5">
                         {item.tech.map((t) => (
                           <span
@@ -722,7 +990,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Contact Link */}
+
                     <a
                       href="#contact"
                       className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:text-secondary transition-colors mt-4 w-fit"
@@ -748,7 +1016,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Contact Section */}
+
       <section
         id="contact"
         className="py-28 relative z-10"
@@ -762,14 +1030,14 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            {/* Contact Details Column */}
+
             <div className="lg:col-span-5 flex flex-col gap-8">
               <p className="text-gray-400 leading-relaxed text-sm">
                 Saya aktif mencari peran backend developer kustom, perancangan API aman, atau fullstack engineer. Jika Anda memiliki kebutuhan proyek atau ingin berpartner, silakan isi formulir di sebelah kanan. Saya akan menghubungi Anda kembali dalam kurun waktu 24 jam.
               </p>
 
               <div className="flex flex-col gap-4">
-                {/* Location */}
+
                 <div className="flex items-center gap-4 p-4.5 bg-white/[0.02] hover:bg-white/[0.04] rounded-2xl border border-white/5 shadow-sm transition-colors duration-300">
                   <span className="text-2xl w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">📍</span>
                   <div>
@@ -778,7 +1046,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Email (One-click Copy UI) */}
+
                 <button
                   onClick={copyEmailToClipboard}
                   className="w-full text-left flex items-center justify-between p-4.5 bg-white/[0.02] hover:bg-white/[0.04] rounded-2xl border border-white/5 shadow-sm transition-all duration-300 group cursor-pointer"
@@ -795,7 +1063,7 @@ export default function Home() {
                   </svg>
                 </button>
 
-                {/* WhatsApp (Interactive chat link) */}
+
                 <a
                   href="https://wa.me/6282131588846?text=Halo%20Mohammad%20Kevin,%20saya%20tertarik%20untuk%20berkolaborasi%20mengenai%20proyek%20saya."
                   target="_blank"
@@ -816,7 +1084,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Form Column */}
+
             <div className="lg:col-span-7 bg-white/[0.02] border border-white/5 rounded-3xl p-8 shadow-xl flex flex-col gap-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">

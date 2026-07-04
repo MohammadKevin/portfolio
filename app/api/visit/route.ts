@@ -14,7 +14,7 @@ function parseUserAgent(userAgent: string) {
 
   const ua = userAgent.toLowerCase();
 
-  // OS detection
+
   if (ua.includes("windows")) os = "Windows";
   else if (ua.includes("macintosh") || ua.includes("mac os x")) os = "macOS";
   else if (ua.includes("android")) {
@@ -28,12 +28,12 @@ function parseUserAgent(userAgent: string) {
     device = "Tablet";
   } else if (ua.includes("linux")) os = "Linux";
 
-  // Device override
+
   if (ua.includes("mobile") && device === "Desktop") {
     device = "Mobile";
   }
 
-  // Browser detection
+
   if (ua.includes("chrome") || ua.includes("crios")) {
     if (ua.includes("edge") || ua.includes("edg")) {
       browser = "Edge";
@@ -54,15 +54,15 @@ function parseUserAgent(userAgent: string) {
 export async function POST(request: NextRequest) {
   try {
     const userAgent = request.headers.get("user-agent") || "Unknown User-Agent";
-    
-    // Obfuscate / Extract client IP
+
+
     const forwarded = request.headers.get("x-forwarded-for");
     const realIp = request.headers.get("x-real-ip");
     const ip = forwarded ? forwarded.split(",")[0].trim() : realIp || "127.0.0.1";
 
     const parsed = parseUserAgent(userAgent);
 
-    // Initialize dir and file
+
     const dirPath = path.dirname(filePath);
     if (!fs.existsSync(dirPath)) {
       fs.mkdirSync(dirPath, { recursive: true });
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Ignore tracker views from localhost if needed, or record all
+
     const newEntry = {
       id: Math.random().toString(36).substring(2, 9),
       timestamp: new Date().toISOString(),
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     visitors.unshift(newEntry);
 
-    // Keep it clean (last 1000 views)
+
     if (visitors.length > 1000) {
       visitors = visitors.slice(0, 1000);
     }

@@ -18,14 +18,14 @@ export default function Analytics() {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Authentication State
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
 
   useEffect(() => {
-    // Check if session is already authenticated
+
     if (sessionStorage.getItem("kevin-analytics-auth") === "true") {
       setIsAuthenticated(true);
     }
@@ -91,7 +91,7 @@ export default function Analytics() {
   if (!isAuthenticated) {
     return (
       <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6 relative overflow-hidden">
-        {/* Background Ambient glows */}
+
         <div className="absolute top-[15%] left-[-10%] w-[30rem] h-[30rem] bg-primary/10 glow-blob animate-glow-1" />
         <div className="absolute bottom-[15%] right-[-10%] w-[30rem] h-[30rem] bg-secondary/10 glow-blob animate-glow-2" />
 
@@ -155,12 +155,12 @@ export default function Analytics() {
 
   return (
     <main className="min-h-screen bg-background text-foreground pt-28 pb-16 relative overflow-hidden">
-      {/* Background Ambient glows */}
+
       <div className="absolute top-[5%] left-[-15%] w-[35rem] h-[35rem] bg-primary/10 glow-blob animate-glow-1" />
       <div className="absolute bottom-[10%] right-[-15%] w-[40rem] h-[40rem] bg-secondary/10 glow-blob animate-glow-2" />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-        {/* Header Section */}
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10 border-b border-white/5 pb-6">
           <div>
             <Link
@@ -188,7 +188,7 @@ export default function Analytics() {
           </button>
         </div>
 
-        {/* Stats Row */}
+
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-10">
           <div className="glass-card p-6 rounded-2xl border border-white/5">
             <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Total Kunjungan</span>
@@ -221,7 +221,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Device breakdown bar */}
+
         <div className="glass-card p-6 rounded-2xl border border-white/5 mb-10">
           <h3 className="text-sm font-bold text-white mb-4">Rasio Distribusi Perangkat</h3>
           <div className="w-full h-4 bg-white/5 rounded-full overflow-hidden flex">
@@ -245,7 +245,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Visitor Table log */}
+
         <div className="glass-card rounded-2xl border border-white/5 overflow-hidden">
           <div className="p-6 border-b border-white/5 flex items-center justify-between">
             <h3 className="text-lg font-bold text-white">Log Aktivitas Terbaru</h3>

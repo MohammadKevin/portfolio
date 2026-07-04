@@ -41,7 +41,7 @@ export default function Footer() {
         <footer className="bg-background/80 text-gray-400 border-t border-white/5 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-                    {/* Brand Info */}
+
                     <div className="lg:col-span-2 flex flex-col gap-6">
                         <Link href="/" className="flex items-center gap-3 group w-fit">
                             <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center text-gray-950 font-extrabold text-xl hover:opacity-90 transition-all duration-300">
@@ -56,7 +56,7 @@ export default function Footer() {
                             Dedicated Fullstack Developer focused on creating secure, performant, and scalable backend services and responsive frontends.
                         </p>
 
-                        {/* Contacts */}
+
                         <div className="flex flex-col gap-3 mt-2">
                             <a
                                 href="mailto:kvn4.200581@gmail.com"
@@ -80,7 +80,7 @@ export default function Footer() {
                             </a>
                         </div>
 
-                        {/* Social Links */}
+
                         <div className="flex items-center gap-3 mt-2">
                             {socials.map((s) => (
                                 <a
@@ -97,7 +97,7 @@ export default function Footer() {
                         </div>
                     </div>
 
-                    {/* Navigation Columns */}
+
                     {Object.entries(footerLinks).map(([title, links]) => (
                         <div key={title} className="flex flex-col gap-5">
                             <h4 className="text-white font-bold text-sm uppercase tracking-wider">{title}</h4>
@@ -128,7 +128,7 @@ export default function Footer() {
                 </div>
             </div>
 
-            {/* Copyright */}
+
             <div className="border-t border-white/5 bg-black/35">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p className="text-sm text-gray-500">

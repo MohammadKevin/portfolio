@@ -78,7 +78,7 @@ export default function Navbar() {
                         </span>
                     </Link>
 
-                    {/* Desktop Menu */}
+
                     <ul className="hidden md:flex items-center gap-2 list-none m-0 p-0">
                         {navItems.map((item) => (
                             <li key={item.label}>
@@ -98,7 +98,7 @@ export default function Navbar() {
                         ))}
                     </ul>
 
-                    {/* Theme Switcher & Contact CTA */}
+
                     <div className="hidden md:flex items-center gap-5">
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/5 rounded-full">
                             {themes.map((t) => (
@@ -114,7 +114,7 @@ export default function Navbar() {
                                 />
                             ))}
                         </div>
-                        
+
                         <a
                             href="#contact"
                             className="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-gray-950 hover:text-black text-sm font-bold rounded-full shadow-lg shadow-primary/10 hover:shadow-primary/30 hover:scale-102 active:scale-98 transition-all duration-300"
