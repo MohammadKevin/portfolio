@@ -1,0 +1,84 @@
+[
+  {
+    "id": "project-1",
+    "title": "InvDocs",
+    "category": "Document Management System",
+    "type": "Fullstack",
+    "color": "from-blue-600 to-cyan-500",
+    "desc": "Sistem berkinerja tinggi yang dirancang untuk pengarsipan dan manajemen dokumentasi digital perusahaan dengan enkripsi file.",
+    "tech": [
+      "Next.js",
+      "Express.js",
+      "PostgreSQL",
+      "Prisma"
+    ]
+  },
+  {
+    "id": "project-2",
+    "title": "Kasir App",
+    "category": "Point of Sale System",
+    "type": "Fullstack",
+    "color": "from-indigo-600 to-blue-500",
+    "desc": "Sistem kasir offline-first lengkap dengan pembuatan faktur, pemantauan stok, dan laporan keuangan komprehensif.",
+    "tech": [
+      "React.js",
+      "Laravel",
+      "MySQL",
+      "Tailwind CSS"
+    ]
+  },
+  {
+    "id": "project-3",
+    "title": "Digital Archive",
+    "category": "Web Application",
+    "type": "Fullstack",
+    "color": "from-cyan-600 to-blue-600",
+    "desc": "Platform pengarsipan data publik dan catatan administratif, dibangun dengan fokus pada kecepatan respon dan keamanan berkas.",
+    "tech": [
+      "Next.js",
+      "Tailwind CSS",
+      "Prisma",
+      "MySQL"
+    ]
+  },
+  {
+    "id": "project-4",
+    "title": "Inventory Management System",
+    "category": "Backend Development",
+    "type": "Backend",
+    "color": "from-blue-700 to-indigo-600",
+    "desc": "RESTful API backend yang mendukung pelacakan barang real-time, peringatan batas stok otomatis, dan multi-warehouse logs.",
+    "tech": [
+      "Node.js",
+      "Express",
+      "JWT",
+      "PostgreSQL"
+    ]
+  },
+  {
+    "id": "project-5",
+    "title": "Portfolio Website",
+    "category": "Frontend Development",
+    "type": "Frontend",
+    "color": "from-blue-500 to-cyan-400",
+    "desc": "Website portofolio interaktif dengan desain gelap modern dan dynamic accent theme untuk menampilkan karya dengan representasi premium.",
+    "tech": [
+      "Next.js",
+      "Tailwind CSS v4",
+      "TypeScript"
+    ]
+  },
+  {
+    "id": "project-6",
+    "title": "School Project Dashboard",
+    "category": "Dashboard UI",
+    "type": "Frontend",
+    "color": "from-slate-800 to-blue-900",
+    "desc": "Antarmuka dashboard kaya data untuk visualisasi metrik performa sekolah, statistik siswa, dan penjadwalan kelas.",
+    "tech": [
+      "React.js",
+      "Chart.js",
+      "Tailwind CSS"
+    ]
+  }
+]

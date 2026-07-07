@@ -2,6 +2,24 @@
 
 import { useState, useRef, useEffect } from "react";
 import * as emailjs from "@emailjs/browser";
+import {
+  Settings,
+  Code2,
+  Database,
+  Wrench,
+  Wind,
+  FlaskConical,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Copy,
+  Rocket,
+  Send,
+  MapPin,
+  Mail,
+  Phone,
+  SearchX,
+} from "lucide-react";
 
 const SERVICE_ID  = "service_rmat5kp";
 const TEMPLATE_ID = "template_zt9llkk";
@@ -16,7 +34,7 @@ const skillCategories = [
   {
     id: "backend",
     name: "Backend Development",
-    icon: "⚙️",
+    icon: Settings,
     skills: [
       { name: "Node.js & Express.js", level: 90 },
       { name: "Laravel (PHP)", level: 65 },
@@ -27,7 +45,7 @@ const skillCategories = [
   {
     id: "frontend",
     name: "Frontend Development",
-    icon: "💻",
+    icon: Code2,
     skills: [
       { name: "React.js & Next.js", level: 85 },
       { name: "Tailwind CSS", level: 90 },
@@ -38,7 +56,7 @@ const skillCategories = [
   {
     id: "database",
     name: "Database Management",
-    icon: "🗄️",
+    icon: Database,
     skills: [
       { name: "MySQL", level: 88 },
       { name: "PostgreSQL", level: 82 },
@@ -49,7 +67,7 @@ const skillCategories = [
   {
     id: "tools",
     name: "Development Tools",
-    icon: "🛠️",
+    icon: Wrench,
     skills: [
       { name: "Git & GitHub", level: 88 },
       { name: "Postman & API Testing", level: 90 },
@@ -121,7 +139,7 @@ const timelineItems = [
   },
 ];
 
-const portfolioItems = [
+const defaultPortfolioItems = [
   {
     title: "InvDocs",
     category: "Document Management System",
@@ -174,6 +192,16 @@ const portfolioItems = [
 
 type ToastType = "success" | "error" | null;
 
+interface ProjectItem {
+  id?: string;
+  title: string;
+  category: string;
+  type: string;
+  color: string;
+  desc: string;
+  tech: string[];
+}
+
 interface FormState {
   firstName: string;
   lastName: string;
@@ -198,11 +226,13 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("backend");
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [portfolioItems, setPortfolioItems] = useState<ProjectItem[]>(defaultPortfolioItems);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const physicsRef = useRef({
     offsetX: 0,
@@ -337,6 +367,23 @@ export default function Home() {
 
   useEffect(() => {
     fetch("/api/visit", { method: "POST" }).catch(console.error);
+
+    // Fetch dynamic projects from API
+    fetch("/api/projects")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.projects && data.projects.length > 0) {
+          setPortfolioItems(data.projects);
+        }
+      })
+      .catch((err) => console.error("Error fetching dynamic projects:", err));
+
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   const showToast = (msg: string, type: ToastType) => {
@@ -356,12 +403,12 @@ export default function Home() {
     const required: (keyof FormState)[] = ["firstName", "email", "subject", "message"];
     for (const key of required) {
       if (!form[key].trim()) {
-        showToast("⚠️ Mohon isi semua bidang wajib.", "error");
+        showToast("Mohon isi semua bidang wajib.", "error");
         return false;
       }
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      showToast("⚠️ Format email tidak valid.", "error");
+      showToast("Format email tidak valid.", "error");
       return false;
     }
     return true;
@@ -385,11 +432,11 @@ export default function Home() {
         },
         PUBLIC_KEY
       );
-      showToast("✅ Pesan berhasil dikirim!", "success");
+      showToast("Pesan berhasil dikirim!", "success");
       setForm(INITIAL_FORM);
     } catch (err) {
       console.error(err);
-      showToast("❌ Gagal mengirim. Cek konfigurasi EmailJS.", "error");
+      showToast("Gagal mengirim. Cek konfigurasi EmailJS.", "error");
     } finally {
       setLoading(false);
     }
@@ -397,7 +444,7 @@ export default function Home() {
 
   const copyEmailToClipboard = () => {
     navigator.clipboard.writeText("kvn4.200581@gmail.com");
-    showToast("📋 Email berhasil disalin ke clipboard!", "success");
+    showToast("Email berhasil disalin ke clipboard!", "success");
   };
 
 
@@ -406,7 +453,7 @@ export default function Home() {
     const matchesSearch =
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.tech.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      item.tech.some((t: string) => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
       item.category.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -429,6 +476,11 @@ export default function Home() {
             : "opacity-0 translate-y-8 scale-90 pointer-events-none"
         } ${toast.type === "success" ? "bg-primary border border-primary/30" : "bg-rose-600 border border-rose-500/30"}`}
       >
+        {toast.type === "success" ? (
+          <CheckCircle2 className="w-5 h-5 shrink-0" />
+        ) : (
+          <AlertTriangle className="w-5 h-5 shrink-0" />
+        )}
         <span>{toast.msg}</span>
       </div>
 
@@ -445,7 +497,7 @@ export default function Home() {
               Tersedia Untuk Pekerjaan Lepas (Freelance)
             </div>
 
-            <h1 className="text-5xl lg:text-7.5xl font-extrabold text-white leading-tight tracking-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-7.5xl font-extrabold text-white leading-tight tracking-tight">
               Backend &{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
                 Fullstack
@@ -453,88 +505,95 @@ export default function Home() {
               Developer
             </h1>
 
-            <p className="text-gray-400 text-lg leading-relaxed max-w-lg">
+            <p className="text-gray-400 text-base sm:text-lg leading-relaxed max-w-lg">
               Halo, saya <span className="text-white font-semibold">Mohammad Kevin</span>. Saya membangun arsitektur web service yang aman, handal, dan berkinerja tinggi, berspesialisasi dalam Node.js, Laravel, dan optimalisasi database.
             </p>
 
 
-            <div className="flex flex-wrap items-center gap-4 mt-2">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2">
               <a
                 href="#contact"
-                className="px-8 py-4 bg-gradient-to-r from-primary to-secondary text-gray-950 font-bold rounded-full shadow-lg shadow-primary/10 hover:shadow-primary/20 hover:-translate-y-0.5 transition-all duration-300"
+                className="inline-flex items-center gap-2 px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-primary to-secondary text-gray-950 font-bold rounded-full shadow-lg shadow-primary/10 hover:shadow-primary/20 hover:-translate-y-0.5 transition-all duration-300 text-sm sm:text-base"
               >
-                Hubungi Saya 🚀
+                Hubungi Saya
+                <Rocket className="w-4 h-4 sm:w-5 sm:h-5" />
               </a>
               <a
                 href="#about"
-                className="px-8 py-4 border border-white/10 hover:border-primary text-white hover:text-primary font-semibold rounded-full hover:-translate-y-0.5 transition-all duration-300"
+                className="px-6 py-3 sm:px-8 sm:py-4 border border-white/10 hover:border-primary text-white hover:text-primary font-semibold rounded-full hover:-translate-y-0.5 transition-all duration-300 text-sm sm:text-base"
               >
                 Tentang Saya
               </a>
             </div>
 
 
-            <div className="flex items-center gap-10 mt-8 pt-8 border-t border-white/5">
+            <div className="flex flex-wrap items-center gap-6 sm:gap-10 mt-8 pt-8 border-t border-white/5">
               {stats.map((s) => (
                 <div key={s.label} className="flex flex-col gap-1">
-                  <span className="text-4xl font-extrabold text-white">{s.value}</span>
-                  <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">{s.label}</span>
+                  <span className="text-3xl sm:text-4xl font-extrabold text-white">{s.value}</span>
+                  <span className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-widest font-semibold">{s.label}</span>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="relative flex justify-center lg:justify-end w-full font-sans">
-            <div className="relative w-full max-w-sm h-[480px] flex justify-center items-start overflow-visible select-none">
+            <div className={`relative w-full max-w-sm h-[430px] sm:h-[480px] flex justify-center items-start overflow-visible select-none scale-85 min-[360px]:scale-90 min-[400px]:scale-95 sm:scale-100 origin-top ${isMobile ? "animate-float" : ""}`}>
               
-              <div className="absolute top-10 left-2 p-3 bg-slate-900/90 border border-white/10 rounded-2xl flex items-center gap-2 shadow-lg hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 select-none z-10">
-                <span className="text-xl">⚙️</span>
+              <div className="absolute top-10 left-2 p-3 bg-slate-900/90 border border-white/10 rounded-2xl flex items-center gap-2 shadow-lg hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 select-none z-10 hidden md:flex">
+                <Settings className="w-5 h-5 text-primary" strokeWidth={1.75} />
                 <span className="text-[10px] font-bold text-white uppercase tracking-wider">NodeJS Expert</span>
               </div>
 
-              <div className="absolute bottom-16 right-2 p-3 bg-slate-900/90 border border-white/10 rounded-2xl flex items-center gap-2 shadow-lg hover:border-secondary/40 hover:-translate-y-1 transition-all duration-300 select-none z-10">
-                <span className="text-xl">🗄️</span>
+              <div className="absolute bottom-16 right-2 p-3 bg-slate-900/90 border border-white/10 rounded-2xl flex items-center gap-2 shadow-lg hover:border-secondary/40 hover:-translate-y-1 transition-all duration-300 select-none z-10 hidden md:flex">
+                <Database className="w-5 h-5 text-primary" strokeWidth={1.75} />
                 <span className="text-[10px] font-bold text-white uppercase tracking-wider">DB Optimizer</span>
               </div>
 
-              <div
-                className="absolute origin-top bg-gradient-to-r from-slate-500 via-slate-300 to-slate-600 shadow-lg"
-                style={{
-                  left: "50%",
-                  top: "-300px",
-                  width: "8px",
-                  height: `${lanyardLength}px`,
-                  transform: `translateX(-50%) rotate(${lanyardAngle}deg)`,
-                  transition: isDragging ? "none" : "height 0.05s ease-out, transform 0.05s ease-out",
-                  zIndex: 20,
-                  borderRadius: "9999px"
-                }}
-              >
-                <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_1px,rgba(0,0,0,0.15)_1px,rgba(0,0,0,0.15)_2px)] rounded-full" />
-
-                <div 
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[60%] w-5 h-7 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 border border-white/20 rounded-md shadow-md flex flex-col items-center justify-between py-1 animate-pulse"
-                  style={{ zIndex: 35 }}
+              {!isMobile && (
+                <div
+                  className="absolute origin-top bg-gradient-to-r from-slate-500 via-slate-300 to-slate-600 shadow-lg"
+                  style={{
+                    left: "50%",
+                    top: "-300px",
+                    width: "8px",
+                    height: `${lanyardLength}px`,
+                    transform: `translateX(-50%) rotate(${lanyardAngle}deg)`,
+                    transition: isDragging ? "none" : "height 0.05s ease-out, transform 0.05s ease-out",
+                    zIndex: 20,
+                    borderRadius: "9999px"
+                  }}
                 >
-                  <div className="w-full h-[2px] bg-slate-500/50" />
-                  <div className="w-[10px] h-[10px] bg-slate-900 border border-white/10 rounded-full" />
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_1px,rgba(0,0,0,0.15)_1px,rgba(0,0,0,0.15)_2px)] rounded-full" />
+
+                  <div 
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[60%] w-5 h-7 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 border border-white/20 rounded-md shadow-md flex flex-col items-center justify-between py-1 animate-pulse"
+                    style={{ zIndex: 35 }}
+                  >
+                    <div className="w-full h-[2px] bg-slate-500/50" />
+                    <div className="w-[10px] h-[10px] bg-slate-900 border border-white/10 rounded-full" />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div
-                onPointerDown={handlePointerDown}
-                onPointerMove={handlePointerMove}
-                onPointerUp={handlePointerUp}
-                onPointerCancel={handlePointerUp}
-                className={`absolute w-[310px] h-[450px] origin-top rounded-[28px] bg-gradient-to-br from-slate-900/95 via-blue-950/85 to-slate-950/95 border-2 border-sky-400/40 shadow-[0_25px_60px_rgba(0,0,0,0.8),0_0_30px_rgba(14,165,233,0.15)] flex flex-col p-4.5 cursor-grab active:cursor-grabbing select-none ${
+                onPointerDown={isMobile ? undefined : handlePointerDown}
+                onPointerMove={isMobile ? undefined : handlePointerMove}
+                onPointerUp={isMobile ? undefined : handlePointerUp}
+                onPointerCancel={isMobile ? undefined : handlePointerUp}
+                className={`absolute w-[310px] h-[450px] origin-top rounded-[28px] bg-gradient-to-br from-slate-900/95 via-blue-950/85 to-slate-950/95 border-2 border-sky-400/40 shadow-[0_25px_60px_rgba(0,0,0,0.8),0_0_30px_rgba(14,165,233,0.15)] flex flex-col p-4.5 select-none ${
+                  isMobile ? "" : "cursor-grab active:cursor-grabbing cursor-grab"
+                } ${
                   isDragging ? "" : "transition-transform duration-75 ease-out"
                 }`}
                 style={{
                   left: "50%",
                   top: "35px",
-                  transform: `translate(calc(-50% + ${offsetX}px), ${offsetY}px) rotate(${cardRotation}deg)`,
+                  transform: isMobile
+                    ? "translateX(-50%)"
+                    : `translate(calc(-50% + ${offsetX}px), ${offsetY}px) rotate(${cardRotation}deg)`,
                   transformOrigin: "50% 0%",
-                  touchAction: "none",
+                  touchAction: isMobile ? "auto" : "none",
                   zIndex: 30
                 }}
               >
@@ -565,7 +624,7 @@ export default function Home() {
                     </div>
 
                     <div className="flex items-center justify-center px-1.5 py-0.5 bg-sky-950/60 border border-sky-400/30 rounded-full text-[6px] font-bold text-sky-300 w-fit gap-1 shadow-sm">
-                      <span className="text-[8px] leading-none">⚙️</span>
+                      <Settings className="w-2 h-2" strokeWidth={2} />
                       <span className="tracking-wider">NODEJS EXPERT</span>
                     </div>
 
@@ -579,7 +638,7 @@ export default function Home() {
                         NEXT.JS
                       </div>
                       <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
-                        <span className="text-[8px] text-sky-400 leading-none">♒</span>
+                        <Wind className="w-2 h-2 text-sky-400" strokeWidth={2.5} />
                         TAILWIND
                       </div>
                       <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
@@ -587,11 +646,11 @@ export default function Home() {
                         LARAVEL
                       </div>
                       <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
-                        <span className="text-[8px] text-sky-400 leading-none">🗄️</span>
+                        <Database className="w-2 h-2 text-sky-400" strokeWidth={2.5} />
                         DATABASE OPT.
                       </div>
                       <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
-                        <span className="text-[8px] text-sky-400 leading-none">🧪</span>
+                        <FlaskConical className="w-2 h-2 text-sky-400" strokeWidth={2.5} />
                          QA & TESTING
                       </div>
                     </div>
@@ -760,23 +819,28 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
 
             <div className="lg:col-span-4 flex flex-col gap-3">
-              {skillCategories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveTab(cat.id)}
-                  className={`w-full text-left p-5 rounded-2xl border transition-all duration-300 flex items-center gap-4 ${
-                    activeTab === cat.id
-                      ? "bg-white/5 border-primary text-primary shadow-lg shadow-primary/5"
-                      : "bg-[#082a2e]/20 border-white/5 text-gray-400 hover:border-white/10 hover:text-white"
-                  }`}
-                >
-                  <span className="text-2xl p-2 bg-white/5 rounded-xl">{cat.icon}</span>
-                  <div>
-                    <h3 className="font-bold text-sm text-white">{cat.name}</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">{cat.skills.length} keahlian utama</p>
-                  </div>
-                </button>
-              ))}
+              {skillCategories.map((cat) => {
+                const Icon = cat.icon;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveTab(cat.id)}
+                    className={`w-full text-left p-5 rounded-2xl border transition-all duration-300 flex items-center gap-4 ${
+                      activeTab === cat.id
+                        ? "bg-white/5 border-primary text-primary shadow-lg shadow-primary/5"
+                        : "bg-[#082a2e]/20 border-white/5 text-gray-400 hover:border-white/10 hover:text-white"
+                    }`}
+                  >
+                    <span className="p-2 bg-white/5 rounded-xl">
+                      <Icon className="w-6 h-6 text-primary" strokeWidth={1.75} />
+                    </span>
+                    <div>
+                      <h3 className="font-bold text-sm text-white">{cat.name}</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">{cat.skills.length} keahlian utama</p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
 
 
@@ -1006,7 +1070,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="text-center py-20 bg-white/[0.02] rounded-3xl border border-white/5 max-w-lg mx-auto">
-              <span className="text-4xl">🔍</span>
+              <SearchX className="w-10 h-10 text-gray-500 mx-auto" strokeWidth={1.5} />
               <h3 className="text-lg font-bold text-white mt-4">Proyek Tidak Ditemukan</h3>
               <p className="text-gray-400 text-sm mt-2 px-6">
                 Tidak ada proyek yang cocok dengan kata kunci "{searchQuery}" di kategori ini. Coba kata kunci atau kategori lain.
@@ -1039,7 +1103,9 @@ export default function Home() {
               <div className="flex flex-col gap-4">
 
                 <div className="flex items-center gap-4 p-4.5 bg-white/[0.02] hover:bg-white/[0.04] rounded-2xl border border-white/5 shadow-sm transition-colors duration-300">
-                  <span className="text-2xl w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">📍</span>
+                  <span className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-primary" strokeWidth={1.75} />
+                  </span>
                   <div>
                     <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Lokasi</p>
                     <p className="text-sm font-semibold text-white mt-0.5">Malang, Jawa Timur, Indonesia</p>
@@ -1052,15 +1118,15 @@ export default function Home() {
                   className="w-full text-left flex items-center justify-between p-4.5 bg-white/[0.02] hover:bg-white/[0.04] rounded-2xl border border-white/5 shadow-sm transition-all duration-300 group cursor-pointer"
                 >
                   <div className="flex items-center gap-4">
-                    <span className="text-2xl w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">📧</span>
+                    <span className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
+                      <Mail className="w-5 h-5 text-primary" strokeWidth={1.75} />
+                    </span>
                     <div>
                       <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Email (Klik untuk Salin)</p>
                       <p className="text-sm font-semibold text-white mt-0.5">kvn4.200581@gmail.com</p>
                     </div>
                   </div>
-                  <svg className="w-5 h-5 text-gray-500 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                  </svg>
+                  <Copy className="w-5 h-5 text-gray-500 group-hover:text-primary transition-colors" strokeWidth={1.75} />
                 </button>
 
 
@@ -1071,7 +1137,9 @@ export default function Home() {
                   className="flex items-center justify-between p-4.5 bg-white/[0.02] hover:bg-white/[0.04] rounded-2xl border border-white/5 shadow-sm transition-all duration-300 group cursor-pointer"
                 >
                   <div className="flex items-center gap-4">
-                    <span className="text-2xl w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">📞</span>
+                    <span className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
+                      <Phone className="w-5 h-5 text-primary" strokeWidth={1.75} />
+                    </span>
                     <div>
                       <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Hubungi WhatsApp (Chat Langsung)</p>
                       <p className="text-sm font-semibold text-white mt-0.5">+62 821-3158-8846</p>
@@ -1188,7 +1256,7 @@ export default function Home() {
                 ) : (
                   <>
                     <span>Kirim Pesan</span>
-                    <span>🚀</span>
+                    <Send className="w-4 h-4" />
                   </>
                 )}
               </button>

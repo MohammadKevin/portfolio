@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navItems = [
     { label: "Home", href: "#home" },
@@ -19,10 +20,15 @@ const themes = [
 ];
 
 export default function Navbar() {
+    const pathname = usePathname();
     const [menuOpen, setMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState("home");
     const [currentTheme, setCurrentTheme] = useState("blue");
+
+    if (pathname && pathname.startsWith("/admin")) {
+        return null;
+    }
 
     useEffect(() => {
         const savedTheme = localStorage.getItem("kevin-portfolio-theme") || "blue";
@@ -164,7 +170,7 @@ export default function Navbar() {
                         {/* Mobile Theme Switcher */}
                         <div className="flex flex-col gap-2">
                             <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Aksen Warna</span>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 flex-wrap">
                                 {themes.map((t) => (
                                     <button
                                         key={t.name}
