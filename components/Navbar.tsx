@@ -68,12 +68,12 @@ export default function Navbar() {
       >
         <div className="flex items-center justify-between">
           
-          <Link href="/" className="flex items-center gap-2.5 group focus-visible:ring-2 focus-visible:ring-amber-400 rounded-lg p-1">
+          <Link href="/" className="flex items-center gap-2.5 group focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1">
             <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-900 border border-slate-800 text-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-amber-400 font-bold">kevin@dev:~$</span>
+              <span className="text-[var(--primary)] font-bold transition-colors">kevin@dev:~$</span>
             </div>
-            <span className="hidden sm:inline-block text-xs font-semibold text-slate-300 group-hover:text-amber-400 transition-colors">
+            <span className="hidden sm:inline-block text-xs font-semibold text-slate-300 group-hover:text-[var(--primary)] transition-colors">
               sys.profile
             </span>
           </Link>
@@ -87,9 +87,9 @@ export default function Navbar() {
                 <li key={item.label}>
                   <a
                     href={item.href}
-                    className={`px-3 py-1.5 text-xs font-mono rounded transition-all duration-200 focus-visible:ring-2 focus-visible:ring-amber-400 ${
+                    className={`px-3 py-1.5 text-xs font-mono rounded transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary ${
                       isActive
-                        ? "text-amber-400 bg-amber-400/10 border border-amber-500/30 font-bold"
+                        ? "text-[var(--primary)] bg-[var(--primary)]/10 border border-[var(--primary)]/30 font-bold shadow-sm"
                         : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent"
                     }`}
                   >
@@ -119,7 +119,7 @@ export default function Navbar() {
 
             <a
               href="#contact"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded shadow-md hover:shadow-amber-500/20 transition-all focus-visible:ring-2 focus-visible:ring-white"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[var(--primary)] text-slate-950 text-xs font-bold rounded shadow-md hover:brightness-110 transition-all focus-visible:ring-2 focus-visible:ring-white"
             >
               <span>$ ./contact.sh</span>
             </a>
