@@ -129,11 +129,11 @@ export default function Navbar() {
           <div className="flex md:hidden">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white focus-visible:ring-2 focus-visible:ring-amber-400"
+              className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white focus-visible:ring-2 focus-visible:ring-primary"
               aria-label="Toggle menu"
             >
               {menuOpen ? (
-                <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
@@ -145,7 +145,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Navigation Dropdown */}
         {menuOpen && (
           <div className="md:hidden mt-3 pt-3 border-t border-slate-800 flex flex-col gap-2 pb-2">
             {navItems.map((item) => {
@@ -158,7 +157,7 @@ export default function Navbar() {
                   onClick={() => setMenuOpen(false)}
                   className={`px-3 py-2 text-xs font-mono rounded transition-colors ${
                     isActive
-                      ? "text-amber-400 bg-amber-400/10 border border-amber-500/30 font-bold"
+                      ? "text-[var(--primary)] bg-[var(--primary)]/10 border border-[var(--primary)]/30 font-bold"
                       : "text-slate-300 hover:bg-slate-800/60"
                   }`}
                 >
@@ -177,7 +176,7 @@ export default function Navbar() {
                       onClick={() => changeTheme(t.name)}
                       className={`px-2.5 py-1 rounded text-[10px] font-mono border transition-all ${
                         currentTheme === t.name
-                          ? "bg-slate-800 border-amber-400 text-amber-400"
+                          ? "bg-slate-800 border-[var(--primary)] text-[var(--primary)]"
                           : "border-slate-800 text-slate-400"
                       }`}
                     >
@@ -190,7 +189,7 @@ export default function Navbar() {
               <a
                 href="#contact"
                 onClick={() => setMenuOpen(false)}
-                className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded text-center"
+                className="w-full py-2 bg-[var(--primary)] text-slate-950 text-xs font-bold rounded text-center"
               >
                 $ ./contact.sh
               </a>
