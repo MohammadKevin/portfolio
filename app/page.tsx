@@ -66,31 +66,23 @@ export default function Home() {
   // Resume Modal State
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
 
-  // API Tester State
-  const [selectedApiEndpoint, setSelectedApiEndpoint] = useState("/api/projects");
-  const [apiLoading, setApiLoading] = useState(false);
-  const [apiResponse, setApiResponse] = useState<any>(null);
-  const [apiStatus, setApiStatus] = useState<number | null>(null);
-  const [apiTime, setApiTime] = useState<number | null>(null);
-  const [copiedApiJson, setCopiedApiJson] = useState(false);
+  // Certificates State & Fetching
+  const [certificatesList, setCertificatesList] = useState<any[]>(certificatesData);
 
-  const handleTestApi = async (endpoint = selectedApiEndpoint) => {
-    setApiLoading(true);
-    const start = performance.now();
-    try {
-      const res = await fetch(endpoint);
-      const end = performance.now();
-      setApiStatus(res.status);
-      setApiTime(Math.round(end - start));
-      const data = await res.json();
-      setApiResponse(data);
-    } catch (err: any) {
-      setApiStatus(500);
-      setApiResponse({ error: err.message || "Failed to execute request" });
-    } finally {
-      setApiLoading(false);
+  useEffect(() => {
+    async function fetchLiveCertificates() {
+      try {
+        const res = await fetch("/api/certificates");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.certificates) && data.certificates.length > 0) {
+          setCertificatesList(data.certificates);
+        }
+      } catch (err) {
+        console.error("Failed to fetch live certificates:", err);
+      }
     }
-  };
+    fetchLiveCertificates();
+  }, []);
 
   // Fetch live projects from API / Supabase
   useEffect(() => {
@@ -857,145 +849,6 @@ export default function Home() {
       </section>
 
 
-      {/* ================= INTERACTIVE API TESTER SECTION ================= */}
-      <section id="api-tester" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex flex-col gap-2 mb-10">
-            <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest">
-              <Server className="w-4 h-4" />
-              <span>$ curl -X GET /api/endpoints --interactive</span>
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
-              Interactive API Endpoint Tester
-            </h2>
-            <p className="text-xs text-slate-400 font-sans max-w-2xl leading-relaxed">
-              Uji coba payload & respon REST API backend portofolio ini secara langsung melalui HTTP Client interaktif di bawah ini.
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-slate-800 bg-[#0d1117] p-6 shadow-2xl">
-            
-            {/* Control Bar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
-              <div className="px-3 py-2 bg-slate-900 border border-slate-800 rounded text-xs font-bold text-amber-400 flex items-center justify-center">
-                GET
-              </div>
-
-              <div className="flex-1 flex items-center gap-2 px-4 py-2 rounded bg-slate-950 border border-slate-800 text-xs text-slate-200">
-                <span className="text-slate-500">https://mohammadkevin.dev</span>
-                <select
-                  value={selectedApiEndpoint}
-                  onChange={(e) => {
-                    setSelectedApiEndpoint(e.target.value);
-                    setApiResponse(null);
-                    setApiStatus(null);
-                    setApiTime(null);
-                  }}
-                  className="bg-transparent text-white font-mono focus:outline-none flex-1 cursor-pointer"
-                >
-                  <option value="/api/projects" className="bg-slate-900 text-white">/api/projects (Supabase Projects Database)</option>
-                  <option value="/api/visit" className="bg-slate-900 text-white">/api/visit (Visitor Analytics Logs)</option>
-                  <option value="/api/github/repos?username=MohammadKevin" className="bg-slate-900 text-white">/api/github/repos (GitHub Repositories API)</option>
-                </select>
-              </div>
-
-              <button
-                onClick={() => handleTestApi(selectedApiEndpoint)}
-                disabled={apiLoading}
-                className="px-5 py-2.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-md"
-              >
-                {apiLoading ? (
-                  <span>Executing...</span>
-                ) : (
-                  <>
-                    <Play className="w-3.5 h-3.5 fill-slate-950" />
-                    <span>$ send --request</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Quick Preset Badges */}
-            <div className="flex flex-wrap items-center gap-2 mb-6 text-xs">
-              <span className="text-slate-400 text-[11px] font-sans">Quick Presets:</span>
-              {[
-                { label: "/api/projects", endpoint: "/api/projects" },
-                { label: "/api/visit", endpoint: "/api/visit" },
-                { label: "/api/github/repos", endpoint: "/api/github/repos?username=MohammadKevin" },
-              ].map((p) => (
-                <button
-                  key={p.endpoint}
-                  onClick={() => {
-                    setSelectedApiEndpoint(p.endpoint);
-                    handleTestApi(p.endpoint);
-                  }}
-                  className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-all cursor-pointer ${
-                    selectedApiEndpoint === p.endpoint
-                      ? "bg-amber-500/10 border-amber-500/40 text-amber-400"
-                      : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Output Display Box */}
-            <div className="rounded-lg border border-slate-800 bg-[#090d16] p-4 text-xs font-mono">
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800/80">
-                <div className="flex items-center gap-3">
-                  <span className="text-slate-400 text-[11px] uppercase">HTTP Response</span>
-                  {apiStatus && (
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${apiStatus >= 200 && apiStatus < 300 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}`}>
-                      {apiStatus} OK
-                    </span>
-                  )}
-                  {apiTime !== null && (
-                    <span className="text-[10px] text-slate-400">
-                      Latency: <strong className="text-amber-400">{apiTime} ms</strong>
-                    </span>
-                  )}
-                </div>
-
-                {apiResponse && (
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(JSON.stringify(apiResponse, null, 2));
-                      setCopiedApiJson(true);
-                      setTimeout(() => setCopiedApiJson(false), 2000);
-                    }}
-                    className="inline-flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-amber-400 transition-colors"
-                  >
-                    {copiedApiJson ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedApiJson ? "Copied!" : "Copy JSON"}</span>
-                  </button>
-                )}
-              </div>
-
-              <div className="max-h-80 overflow-y-auto font-mono text-[11px] leading-relaxed text-slate-300">
-                {apiLoading ? (
-                  <div className="text-amber-400 animate-pulse py-8 text-center">
-                    $ connecting to server & executing query...
-                  </div>
-                ) : apiResponse ? (
-                  <pre className="whitespace-pre-wrap text-emerald-400/90 font-mono">
-                    {JSON.stringify(apiResponse, null, 2)}
-                  </pre>
-                ) : (
-                  <div className="text-slate-500 py-8 text-center font-sans">
-                    Klik tombol <strong>$ send --request</strong> di atas untuk melihat respon JSON real-time dari API.
-                  </div>
-                )}
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-
       {/* ================= CERTIFICATES & CREDENTIALS SECTION ================= */}
       <section id="certificates" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1013,7 +866,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {certificatesData.map((cert) => (
+            {certificatesList.map((cert) => (
               <div
                 key={cert.id}
                 className="rounded-xl border border-slate-800 bg-[#0d1117] hover:border-amber-500/40 transition-all duration-300 flex flex-col justify-between p-6 shadow-xl group"

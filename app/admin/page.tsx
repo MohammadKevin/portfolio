@@ -27,6 +27,8 @@ import {
   ExternalLink,
   RefreshCw,
   GitBranch,
+  Award,
+  ShieldCheck
 } from "lucide-react";
 
 interface Project {
@@ -39,6 +41,16 @@ interface Project {
   tech: string[];
   demoUrl?: string;
   repoUrl?: string;
+}
+
+interface CertificateItem {
+  id: string;
+  title: string;
+  issuer: string;
+  date: string;
+  category: string;
+  skills: string[];
+  credentialUrl?: string;
 }
 
 interface Visitor {
@@ -83,12 +95,24 @@ export default function AdminDashboard() {
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
 
-  const [activeTab, setActiveTab] = useState<"projects" | "analytics">("projects");
+  const [activeTab, setActiveTab] = useState<"projects" | "certificates" | "analytics">("projects");
   const [projects, setProjects] = useState<Project[]>([]);
+  const [certificates, setCertificates] = useState<CertificateItem[]>([]);
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   
   const [loadingProjects, setLoadingProjects] = useState(true);
+  const [loadingCertificates, setLoadingCertificates] = useState(false);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+  
+  // Certificate Form States
+  const [isEditingCert, setIsEditingCert] = useState(false);
+  const [certId, setCertId] = useState("");
+  const [certTitle, setCertTitle] = useState("");
+  const [certIssuer, setCertIssuer] = useState("");
+  const [certDate, setCertDate] = useState("2024");
+  const [certCategory, setCertCategory] = useState("Backend");
+  const [certSkills, setCertSkills] = useState("");
+  const [certCredentialUrl, setCertCredentialUrl] = useState("");
   
   // Project Form States
   const [isEditing, setIsEditing] = useState(false);
@@ -145,11 +169,106 @@ export default function AdminDashboard() {
     fetchGithubRepos("MohammadKevin");
   }, [isAuthenticated]);
 
-  // Fetch Analytics if Tab Active
+  // Fetch Certificates if Tab Active or on Load
   useEffect(() => {
-    if (!isAuthenticated || activeTab !== "analytics") return;
-    fetchAnalytics();
+    if (!isAuthenticated) return;
+    if (activeTab === "certificates") {
+      fetchCertificates();
+    }
   }, [isAuthenticated, activeTab]);
+
+  const fetchCertificates = () => {
+    setLoadingCertificates(true);
+    fetch("/api/certificates")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setCertificates(data.certificates);
+        } else {
+          showToast(data.error || "Gagal mengambil data sertifikat", "error");
+        }
+      })
+      .catch((err) => {
+        console.error("Fetch certificates error:", err);
+        showToast("Error koneksi server", "error");
+      })
+      .finally(() => setLoadingCertificates(false));
+  };
+
+  const handleSaveCertificate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!certTitle || !certIssuer || !certDate) {
+      showToast("Harap isi semua bidang wajib", "error");
+      return;
+    }
+
+    const payload = {
+      id: certId,
+      title: certTitle,
+      issuer: certIssuer,
+      date: certDate,
+      category: certCategory,
+      skills: certSkills,
+      credentialUrl: certCredentialUrl
+    };
+
+    const method = isEditingCert ? "PUT" : "POST";
+    try {
+      const res = await fetch("/api/certificates", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(isEditingCert ? "Sertifikat berhasil diperbarui!" : "Sertifikat baru berhasil ditambahkan!", "success");
+        resetCertForm();
+        fetchCertificates();
+      } else {
+        showToast(data.error || "Gagal menyimpan sertifikat", "error");
+      }
+    } catch (err) {
+      showToast("Error koneksi saat menyimpan sertifikat", "error");
+    }
+  };
+
+  const handleDeleteCertificate = async (id: string) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus sertifikat ini?")) return;
+    try {
+      const res = await fetch(`/api/certificates?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showToast("Sertifikat berhasil dihapus!", "success");
+        fetchCertificates();
+      } else {
+        showToast(data.error || "Gagal menghapus sertifikat", "error");
+      }
+    } catch (err) {
+      showToast("Error koneksi saat menghapus sertifikat", "error");
+    }
+  };
+
+  const handleEditCertClick = (cert: CertificateItem) => {
+    setIsEditingCert(true);
+    setCertId(cert.id);
+    setCertTitle(cert.title);
+    setCertIssuer(cert.issuer);
+    setCertDate(cert.date);
+    setCertCategory(cert.category || "Backend");
+    setCertSkills(Array.isArray(cert.skills) ? cert.skills.join(", ") : "");
+    setCertCredentialUrl(cert.credentialUrl || "");
+  };
+
+  const resetCertForm = () => {
+    setIsEditingCert(false);
+    setCertId("");
+    setCertTitle("");
+    setCertIssuer("");
+    setCertDate("2024");
+    setCertCategory("Backend");
+    setCertSkills("");
+    setCertCredentialUrl("");
+  };
 
   const showToast = (msg: string, type: "success" | "error") => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -513,6 +632,7 @@ export default function AdminDashboard() {
             <button
               onClick={() => {
                 if (activeTab === "projects") fetchProjects();
+                else if (activeTab === "certificates") fetchCertificates();
                 else fetchAnalytics();
               }}
               className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 border border-white/10 hover:border-primary hover:text-primary rounded-xl text-xs font-bold text-white transition-all cursor-pointer"
@@ -530,7 +650,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex gap-2 p-1.5 bg-slate-950/60 border border-white/5 rounded-2xl w-fit mb-10">
+        <div className="flex flex-wrap gap-2 p-1.5 bg-slate-950/60 border border-white/5 rounded-2xl w-fit mb-10">
           <button
             onClick={() => setActiveTab("projects")}
             className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -539,6 +659,15 @@ export default function AdminDashboard() {
           >
             <Folder className="w-4 h-4" />
             Upload & Edit Proyek
+          </button>
+          <button
+            onClick={() => setActiveTab("certificates")}
+            className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === "certificates" ? "bg-primary text-gray-950 shadow-lg" : "text-gray-400 hover:text-white"
+            }`}
+          >
+            <Award className="w-4 h-4" />
+            Kelola Sertifikat
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
@@ -967,6 +1096,210 @@ export default function AdminDashboard() {
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+        ) : activeTab === "certificates" ? (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* FORM UPLOAD SERTIFIKAT (Left - 5 Cols) */}
+            <div className="lg:col-span-5 bg-slate-900/40 border border-white/5 rounded-3xl p-6 shadow-xl flex flex-col gap-6 relative">
+              <div className="border-b border-white/5 pb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Award className="w-5 h-5 text-primary" />
+                    <span>{isEditingCert ? "Edit Sertifikat" : "Upload Sertifikat Baru"}</span>
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {isEditingCert ? "Perbarui informasi kredensial sertifikat." : "Tambahkan sertifikasi & kredensial profesional baru."}
+                  </p>
+                </div>
+                {isEditingCert && (
+                  <button
+                    onClick={resetCertForm}
+                    className="px-3 py-1 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg text-xs font-semibold border border-white/10 transition-all cursor-pointer"
+                  >
+                    Batal Edit
+                  </button>
+                )}
+              </div>
+
+              <form onSubmit={handleSaveCertificate} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-gray-300">Judul Sertifikat *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="misal: Backend Developer & RESTful API Engineering"
+                    value={certTitle}
+                    onChange={(e) => setCertTitle(e.target.value)}
+                    className="px-4 py-2.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs text-white bg-slate-950/60"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-gray-300">Penerbit / Institusi *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="misal: SMK Telkom Malang / Dicoding / Udemy"
+                    value={certIssuer}
+                    onChange={(e) => setCertIssuer(e.target.value)}
+                    className="px-4 py-2.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs text-white bg-slate-950/60"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-gray-300">Tahun / Tanggal *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="misal: 2024"
+                      value={certDate}
+                      onChange={(e) => setCertDate(e.target.value)}
+                      className="px-4 py-2.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs text-white bg-slate-950/60"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-gray-300">Kategori *</label>
+                    <select
+                      value={certCategory}
+                      onChange={(e) => setCertCategory(e.target.value)}
+                      className="px-4 py-2.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary text-xs text-white bg-slate-950/60 cursor-pointer"
+                    >
+                      <option value="Backend" className="bg-slate-900">Backend</option>
+                      <option value="Fullstack" className="bg-slate-900">Fullstack</option>
+                      <option value="Database" className="bg-slate-900">Database</option>
+                      <option value="General" className="bg-slate-900">General</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-gray-300">Skill / Teknologi (Pisahkan Koma)</label>
+                  <input
+                    type="text"
+                    placeholder="misal: Node.js, Express, PostgreSQL, Prisma"
+                    value={certSkills}
+                    onChange={(e) => setCertSkills(e.target.value)}
+                    className="px-4 py-2.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs text-white bg-slate-950/60"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-gray-300">URL Verifikasi Credential (Opsional)</label>
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    value={certCredentialUrl}
+                    onChange={(e) => setCertCredentialUrl(e.target.value)}
+                    className="px-4 py-2.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs text-white bg-slate-950/60"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="mt-2 w-full py-3 bg-gradient-to-r from-primary to-secondary text-gray-950 font-bold rounded-xl shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 cursor-pointer text-xs uppercase tracking-wider flex items-center justify-center gap-2"
+                >
+                  <Award className="w-4 h-4" />
+                  <span>{isEditingCert ? "Perbarui Sertifikat" : "Upload Sertifikat"}</span>
+                </button>
+              </form>
+
+            </div>
+
+            {/* DAFTAR SERTIFIKAT (Right - 7 Cols) */}
+            <div className="lg:col-span-7 bg-slate-900/40 border border-white/5 rounded-3xl p-6 shadow-xl flex flex-col gap-6">
+              <div className="border-b border-white/5 pb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                    <span>Daftar Sertifikat Terdaftar ({certificates.length})</span>
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-0.5">Seluruh kredensial sertifikasi yang tampil di halaman portofolio.</p>
+                </div>
+              </div>
+
+              {loadingCertificates ? (
+                <div className="text-center py-16 text-gray-500">
+                  Memuat data sertifikat...
+                </div>
+              ) : certificates.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {certificates.map((cert) => (
+                    <div
+                      key={cert.id}
+                      className="border border-white/5 bg-slate-950/40 rounded-2xl p-5 hover:border-primary/20 transition-all flex flex-col justify-between h-52 relative"
+                    >
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-bold text-primary uppercase tracking-widest">{cert.category || "Backend"}</span>
+                          <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded-md">
+                            {cert.date}
+                          </span>
+                        </div>
+                        <h3 className="text-sm font-bold text-white leading-tight">{cert.title}</h3>
+                        <p className="text-xs text-gray-400 leading-relaxed">{cert.issuer}</p>
+                      </div>
+
+                      <div>
+                        {Array.isArray(cert.skills) && cert.skills.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mb-3">
+                            {cert.skills.map((s) => (
+                              <span key={s} className="text-[8px] bg-slate-900 border border-white/5 px-1.5 py-0.5 rounded text-gray-300">
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                          {cert.credentialUrl ? (
+                            <a
+                              href={cert.credentialUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] text-primary hover:underline font-bold flex items-center gap-1"
+                            >
+                              <span>Verify Link</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          ) : (
+                            <span className="text-[9px] text-gray-600">No URL</span>
+                          )}
+
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => handleEditCertClick(cert)}
+                              className="p-1.5 rounded-lg bg-white/5 border border-white/5 hover:border-primary hover:text-primary text-gray-400 transition-all cursor-pointer"
+                              title="Edit Sertifikat"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCertificate(cert.id)}
+                              className="p-1.5 rounded-lg bg-white/5 border border-white/5 hover:border-rose-500 hover:text-rose-500 text-gray-400 transition-all cursor-pointer"
+                              title="Hapus Sertifikat"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white/[0.01] rounded-2xl border border-white/5">
+                  <Award className="w-8 h-8 text-gray-500 mx-auto" />
+                  <h3 className="text-sm font-bold text-white mt-3">Belum Ada Sertifikat</h3>
+                  <p className="text-xs text-gray-400 mt-1.5 px-6">
+                    Tambah sertifikat baru menggunakan formulir di sebelah kiri.
+                  </p>
+                </div>
+              )}
+
             </div>
           </div>
         ) : (

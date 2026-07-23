@@ -60,9 +60,39 @@ CREATE TABLE IF NOT EXISTS public.visitors (
 -- Aktifkan Row Level Security (RLS)
 ALTER TABLE public.visitors ENABLE ROW LEVEL SECURITY;
 
--- Buat Kebijakan Keamanan (Policies) agar API Route Next.js Anda bisa mengakses data
+-- Buat Kebijakan Keamanan (Policies)
 CREATE POLICY "Allow public read and write visitors" 
 ON public.visitors 
+FOR ALL 
+USING (true) 
+WITH CHECK (true);
+
+
+-- ----------------------------------------------------
+-- 3. PEMBUATAN TABEL SERTIFIKAT (certificates)
+-- ----------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.certificates (
+  id text PRIMARY KEY,
+  title text NOT NULL,
+  issuer text NOT NULL,
+  date text NOT NULL,
+  category text NOT NULL,
+  skills jsonb NOT NULL,
+  "credentialUrl" text DEFAULT '',
+  credential_url text DEFAULT '',
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- JIKA TABEL SUDAH ADA, JALANKAN SQL INI DI SUPABASE SQL EDITOR:
+ALTER TABLE public.certificates ADD COLUMN IF NOT EXISTS "credentialUrl" text DEFAULT '';
+ALTER TABLE public.certificates ADD COLUMN IF NOT EXISTS credential_url text DEFAULT '';
+
+-- Aktifkan Row Level Security (RLS)
+ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
+
+-- Buat Kebijakan Keamanan (Policies)
+CREATE POLICY "Allow public read and write certificates" 
+ON public.certificates 
 FOR ALL 
 USING (true) 
 WITH CHECK (true);
