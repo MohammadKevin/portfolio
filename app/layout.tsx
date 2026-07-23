@@ -49,16 +49,14 @@ export default function RootLayout({
               (function() {
                 try {
                   const savedTheme = localStorage.getItem('kevin-portfolio-theme') || 'amber';
-                  if (savedTheme !== 'amber') {
-                    document.documentElement.setAttribute('data-theme', savedTheme);
-                  }
+                  document.documentElement.setAttribute('data-theme', savedTheme);
                 } catch (e) {}
               })();
             `,
           }}
         />
       </head>
-      <body className="antialiased bg-background text-slate-300 min-h-screen font-sans selection:bg-amber-400/20 selection:text-amber-300 transition-colors duration-500">
+      <body suppressHydrationWarning className="antialiased bg-background text-slate-300 min-h-screen font-sans selection:bg-amber-400/20 selection:text-amber-300 transition-colors duration-500">
         <Navbar />
         {children}
         <Footer />
