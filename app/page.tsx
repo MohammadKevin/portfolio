@@ -1207,9 +1207,11 @@ export default function Home() {
                   <p className="text-xs text-amber-400 font-mono mt-0.5">Backend & Fullstack Developer | SMK Telkom Malang</p>
                 </div>
                 <a
-                  href="/resume.pdf"
-                  download="CV_Mohammad_Kevin_Backend_Developer.pdf"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-all shadow-md focus-visible:ring-2 focus-visible:ring-white shrink-0"
+                  href="/CV%20Mohammad%20Kevin.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download="CV Mohammad Kevin.pdf"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-[var(--primary)] text-slate-950 font-bold text-xs transition-all shadow-md focus-visible:ring-2 focus-visible:ring-white shrink-0 hover:brightness-110"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download PDF</span>
