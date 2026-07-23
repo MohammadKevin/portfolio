@@ -23,6 +23,10 @@ import {
   Smartphone,
   Laptop,
   Monitor,
+  Code2,
+  ExternalLink,
+  RefreshCw,
+  GitBranch,
 } from "lucide-react";
 
 interface Project {
@@ -45,6 +49,20 @@ interface Visitor {
   os: string;
   browser: string;
   userAgent: string;
+}
+
+interface GithubRepo {
+  id: number;
+  name: string;
+  fullName: string;
+  repoUrl: string;
+  description: string;
+  homepage: string;
+  language: string;
+  topics: string[];
+  stars: number;
+  forks: number;
+  updatedAt: string;
 }
 
 const colorGradients = [
@@ -84,6 +102,14 @@ export default function AdminDashboard() {
   const [formDemoUrl, setFormDemoUrl] = useState("");
   const [formRepoUrl, setFormRepoUrl] = useState("");
 
+  // GitHub Repositories State
+  const [githubUsername, setGithubUsername] = useState("MohammadKevin");
+  const [githubRepos, setGithubRepos] = useState<GithubRepo[]>([]);
+  const [loadingGithubRepos, setLoadingGithubRepos] = useState(false);
+  const [repoInputSearch, setRepoInputSearch] = useState("");
+  const [isRepoDropdownOpen, setIsRepoDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   // Search & Filter States
   const [searchQuery, setSearchQuery] = useState("");
   const [searchVisitorQuery, setSearchVisitorQuery] = useState("");
@@ -94,6 +120,17 @@ export default function AdminDashboard() {
   const [toastVisible, setToastVisible] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsRepoDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Authenticate on Load
   useEffect(() => {
     if (sessionStorage.getItem("kevin-analytics-auth") === "true") {
@@ -101,10 +138,11 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  // Fetch Projects if Authenticated
+  // Fetch Projects and GitHub Repos if Authenticated
   useEffect(() => {
     if (!isAuthenticated) return;
     fetchProjects();
+    fetchGithubRepos("MohammadKevin");
   }, [isAuthenticated]);
 
   // Fetch Analytics if Tab Active
@@ -156,6 +194,66 @@ export default function AdminDashboard() {
       .finally(() => setLoadingAnalytics(false));
   };
 
+  const fetchGithubRepos = async (user = githubUsername) => {
+    if (!user.trim()) return;
+    setLoadingGithubRepos(true);
+    try {
+      const res = await fetch(`/api/github/repos?username=${encodeURIComponent(user.trim())}`);
+      const data = await res.json();
+      if (data.success) {
+        setGithubRepos(data.repos);
+      } else {
+        showToast(data.error || "Gagal mengambil repository GitHub", "error");
+      }
+    } catch (err) {
+      console.error("Fetch GitHub repos error:", err);
+      showToast("Gagal terhubung ke GitHub API", "error");
+    } finally {
+      setLoadingGithubRepos(false);
+    }
+  };
+
+  const handleSelectGithubRepo = (repo: GithubRepo) => {
+    setFormRepoUrl(repo.repoUrl);
+    setRepoInputSearch(repo.name);
+
+    // Auto-fill title if empty or default
+    if (!formTitle || formTitle === "Kasir App" || !isEditing) {
+      const formattedTitle = repo.name
+        .split(/[-_]/)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+      setFormTitle(formattedTitle);
+    }
+
+    if (repo.description) {
+      setFormDesc(repo.description);
+    }
+
+    if (repo.homepage) {
+      setFormDemoUrl(repo.homepage);
+    }
+
+    // Auto-suggest tech stack from repo language & topics
+    const techItems: string[] = [];
+    if (repo.language) techItems.push(repo.language);
+    if (Array.isArray(repo.topics)) {
+      repo.topics.forEach((t) => {
+        const cleanTech = t.charAt(0).toUpperCase() + t.slice(1);
+        if (!techItems.map((x) => x.toLowerCase()).includes(cleanTech.toLowerCase())) {
+          techItems.push(cleanTech);
+        }
+      });
+    }
+
+    if (techItems.length > 0) {
+      setFormTech(techItems.join(", "));
+    }
+
+    setIsRepoDropdownOpen(false);
+    showToast(`Terhubung ke GitHub repo "${repo.name}"!`, "success");
+  };
+
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (username === "kevin" && password === "kevin135") {
@@ -185,6 +283,7 @@ export default function AdminDashboard() {
     setFormTech("");
     setFormDemoUrl("");
     setFormRepoUrl("");
+    setRepoInputSearch("");
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -241,6 +340,7 @@ export default function AdminDashboard() {
     setFormTech(project.tech.join(", "));
     setFormDemoUrl(project.demoUrl || "");
     setFormRepoUrl(project.repoUrl || "");
+    setRepoInputSearch(project.repoUrl ? project.repoUrl.replace("https://github.com/MohammadKevin/", "").replace("https://github.com/", "") : "");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -283,6 +383,13 @@ export default function AdminDashboard() {
     const matchesDevice = visitorFilterDevice === "All" || v.device === visitorFilterDevice;
     return matchesSearch && matchesDevice;
   });
+
+  // Inline Repo Search Filter
+  const searchFilteredRepos = githubRepos.filter((r) =>
+    r.name.toLowerCase().includes(repoInputSearch.toLowerCase()) ||
+    r.description.toLowerCase().includes(repoInputSearch.toLowerCase()) ||
+    (r.language && r.language.toLowerCase().includes(repoInputSearch.toLowerCase()))
+  );
 
   const formatDate = (isoString: string) => {
     try {
@@ -358,7 +465,7 @@ export default function AdminDashboard() {
 
             <button
               type="submit"
-              className="w-full py-4.5 bg-gradient-to-r from-primary to-secondary text-gray-950 font-bold rounded-xl shadow-lg shadow-primary/10 hover:shadow-primary/20 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 cursor-pointer text-center text-sm"
+              className="w-full py-4 bg-gradient-to-r from-primary to-secondary text-gray-950 font-bold rounded-xl shadow-lg shadow-primary/10 hover:shadow-primary/20 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 cursor-pointer text-center text-sm"
             >
               Masuk ke Dashboard
             </button>
@@ -470,6 +577,124 @@ export default function AdminDashboard() {
               </div>
 
               <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
+                
+                {/* INLINE GITHUB REPO SEARCH SELECTOR */}
+                <div ref={dropdownRef} className="flex flex-col gap-1.5 p-4 rounded-2xl bg-slate-950/80 border border-primary/30 relative">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                        <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                      </svg>
+                      Cari & Pilih Repo GitHub (@{githubUsername})
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => fetchGithubRepos(githubUsername)}
+                      disabled={loadingGithubRepos}
+                      className="text-[10px] text-gray-400 hover:text-primary flex items-center gap-1 font-semibold transition-colors cursor-pointer"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${loadingGithubRepos ? "animate-spin text-primary" : ""}`} />
+                      <span>Muat Ulang Repo</span>
+                    </button>
+                  </div>
+
+                  {/* Input Search & Dropdown Trigger */}
+                  <div className="relative mt-1">
+                    <div className="flex items-center bg-slate-900 border border-white/10 rounded-xl focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-all">
+                      <div className="pl-3.5 pr-1 text-primary">
+                        <Search className="w-3.5 h-3.5" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder={loadingGithubRepos ? "Memuat repository GitHub..." : "Ketik untuk mencari repo (contoh: Kasir, portfolio)..."}
+                        value={repoInputSearch || (formRepoUrl ? formRepoUrl.replace("https://github.com/MohammadKevin/", "").replace("https://github.com/", "") : "")}
+                        onChange={(e) => {
+                          setRepoInputSearch(e.target.value);
+                          setFormRepoUrl(e.target.value ? `https://github.com/${githubUsername}/${e.target.value}` : "");
+                          setIsRepoDropdownOpen(true);
+                        }}
+                        onFocus={() => setIsRepoDropdownOpen(true)}
+                        className="w-full py-2.5 px-2 text-xs text-white bg-transparent focus:outline-none placeholder-gray-500 font-mono"
+                      />
+                      {formRepoUrl && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormRepoUrl("");
+                            setRepoInputSearch("");
+                          }}
+                          className="pr-3 text-gray-500 hover:text-rose-400 text-xs font-bold cursor-pointer"
+                          title="Hapus tautan repo"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Dropdown Menu Result */}
+                    {isRepoDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1.5 z-40 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl max-h-56 overflow-y-auto p-1.5 font-sans">
+                        {loadingGithubRepos ? (
+                          <div className="py-4 text-center text-gray-400 text-xs flex items-center justify-center gap-2">
+                            <svg className="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                            </svg>
+                            Memuat daftar repo @{githubUsername}...
+                          </div>
+                        ) : searchFilteredRepos.length > 0 ? (
+                          searchFilteredRepos.map((repo) => (
+                            <div
+                              key={repo.id}
+                              onClick={() => handleSelectGithubRepo(repo)}
+                              className="p-2.5 rounded-xl hover:bg-slate-800 transition-all cursor-pointer flex items-center justify-between group border border-transparent hover:border-primary/20"
+                            >
+                              <div className="flex flex-col gap-0.5 truncate pr-2">
+                                <div className="flex items-center gap-2">
+                                  <Folder className="w-3.5 h-3.5 text-primary shrink-0" />
+                                  <span className="text-xs font-bold text-white group-hover:text-primary transition-colors truncate">
+                                    {repo.name}
+                                  </span>
+                                  {repo.language && (
+                                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-primary/10 border border-primary/20 text-primary shrink-0 font-mono">
+                                      {repo.language}
+                                    </span>
+                                  )}
+                                </div>
+                                {repo.description && (
+                                  <span className="text-[10px] text-gray-400 truncate pl-5">
+                                    {repo.description}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-primary font-bold shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                Pilih ✓
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="py-4 text-center text-gray-400 text-xs">
+                            Tidak ada repository bernama "{repoInputSearch}".
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {formRepoUrl ? (
+                    <div className="flex items-center justify-between text-[10px] bg-slate-900 p-2 rounded-xl border border-emerald-500/30 text-emerald-400 mt-1 font-mono">
+                      <span className="truncate flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                        Connected: {formRepoUrl}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-[9px] text-gray-400 mt-0.5">
+                      Ketik atau klik kolom di atas untuk mencari & menghubungkan repo GitHub.
+                    </span>
+                  )}
+                </div>
+
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Judul Proyek *</label>
                   <input
@@ -517,7 +742,7 @@ export default function AdminDashboard() {
                         key={g.value}
                         type="button"
                         onClick={() => setFormColor(g.value)}
-                        className={`h-10 rounded-xl relative border flex items-center justify-center text-[9px] font-bold text-white tracking-tight overflow-hidden transition-all ${
+                        className={`h-10 rounded-xl relative border flex items-center justify-center text-[9px] font-bold text-white tracking-tight overflow-hidden transition-all cursor-pointer ${
                           formColor === g.value ? "border-primary ring-2 ring-primary/45" : "border-white/5 hover:border-white/20"
                         }`}
                       >
@@ -571,7 +796,7 @@ export default function AdminDashboard() {
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                      Source Code URL (Opsional)
+                      GitHub Repo URL (Terisi Otomatis)
                     </label>
                     <input
                       type="url"
@@ -598,9 +823,17 @@ export default function AdminDashboard() {
                   <div className={`h-full bg-gradient-to-br ${formColor} p-6 flex flex-col justify-between overflow-hidden relative z-0`}>
                     <div className="absolute inset-0 bg-[#030712]/45 backdrop-blur-[1px]" />
                     
-                    <span className="relative z-10 text-[10px] font-bold text-white/90 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full w-fit border border-white/10 uppercase tracking-wider">
-                      {formCategory || "Kategori"}
-                    </span>
+                    <div className="relative z-10 flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-white/90 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 uppercase tracking-wider">
+                        {formCategory || "Kategori"}
+                      </span>
+                      {formRepoUrl && (
+                        <span className="text-[9px] font-bold text-emerald-400 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          GitHub Connected
+                        </span>
+                      )}
+                    </div>
 
                     <div className="relative z-10 flex flex-col gap-1">
                       <h3 className="text-xl font-extrabold text-white leading-tight">{formTitle || "Judul Proyek"}</h3>
@@ -661,14 +894,24 @@ export default function AdminDashboard() {
                   {filteredProjects.map((p) => (
                     <div
                       key={p.id}
-                      className="border border-white/5 bg-slate-950/40 rounded-2xl p-5 hover:border-primary/20 transition-all flex flex-col justify-between h-48"
+                      className="border border-white/5 bg-slate-950/40 rounded-2xl p-5 hover:border-primary/20 transition-all flex flex-col justify-between h-52 relative"
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                           <span className="text-[9px] font-bold text-primary uppercase tracking-widest">{p.category}</span>
-                          <span className="text-[9px] font-semibold text-white bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
-                            {p.type}
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            {p.repoUrl && p.repoUrl.includes("github.com") && (
+                              <span className="text-[8px] font-bold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-1.5 py-0.5 rounded-md flex items-center gap-1 font-mono">
+                                <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                                  <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                                </svg>
+                                GitHub
+                              </span>
+                            )}
+                            <span className="text-[9px] font-semibold text-white bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
+                              {p.type}
+                            </span>
+                          </div>
                         </div>
                         <h3 className="text-base font-bold text-white leading-tight">{p.title}</h3>
                         <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">{p.desc}</p>
@@ -685,16 +928,27 @@ export default function AdminDashboard() {
                         </div>
 
                         <div className="flex items-center gap-1.5">
+                          {p.repoUrl && (
+                            <a
+                              href={p.repoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1.5 rounded-lg bg-white/5 border border-white/5 hover:border-emerald-500 hover:text-emerald-400 text-gray-400 transition-all"
+                              title="Buka Repo GitHub"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          )}
                           <button
                             onClick={() => handleEditClick(p)}
-                            className="p-1.5 rounded-lg bg-white/5 border border-white/5 hover:border-primary hover:text-primary text-gray-400 transition-all"
+                            className="p-1.5 rounded-lg bg-white/5 border border-white/5 hover:border-primary hover:text-primary text-gray-400 transition-all cursor-pointer"
                             title="Edit Proyek"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteClick(p.id, p.title)}
-                            className="p-1.5 rounded-lg bg-white/5 border border-white/5 hover:border-rose-500 hover:text-rose-500 text-gray-400 transition-all"
+                            className="p-1.5 rounded-lg bg-white/5 border border-white/5 hover:border-rose-500 hover:text-rose-500 text-gray-400 transition-all cursor-pointer"
                             title="Hapus Proyek"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -802,75 +1056,63 @@ export default function AdminDashboard() {
                   <div className="relative w-full sm:w-64">
                     <input
                       type="text"
-                      placeholder="Cari IP, OS, Browser..."
+                      placeholder="Cari IP / OS / Browser..."
                       value={searchVisitorQuery}
                       onChange={(e) => setSearchVisitorQuery(e.target.value)}
-                      className="w-full px-4 py-2 pl-9 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs text-white bg-slate-950/60"
+                      className="w-full px-4 py-2 pl-9 rounded-xl border border-white/5 focus:outline-none text-xs text-white bg-slate-950/60"
                     />
                     <Search className="w-3.5 h-3.5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
               </div>
 
-              {loadingAnalytics ? (
-                <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
-                  <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  <span className="text-xs">Memuat logs analitik...</span>
-                </div>
-              ) : filteredVisitors.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-white/5 text-gray-500 uppercase tracking-wider font-semibold">
-                        <th className="py-3 px-4">Waktu</th>
-                        <th className="py-3 px-4">IP Address</th>
-                        <th className="py-3 px-4">Alat</th>
-                        <th className="py-3 px-4">Sistem Operasi</th>
-                        <th className="py-3 px-4">Browser</th>
-                        <th className="py-3 px-4 max-w-xs truncate">User Agent</th>
+              {/* Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs text-gray-400">
+                  <thead className="text-[10px] text-gray-500 uppercase bg-slate-950/80 border-b border-white/5 font-bold tracking-wider">
+                    <tr>
+                      <th className="py-3 px-4">Perangkat</th>
+                      <th className="py-3 px-4">Sistem Operasi</th>
+                      <th className="py-3 px-4">Browser</th>
+                      <th className="py-3 px-4">IP Address</th>
+                      <th className="py-3 px-4">Waktu Kunjungan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {loadingAnalytics ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-12 text-gray-500">
+                          Memuat data log pengunjung...
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5 text-gray-300">
-                      {filteredVisitors.slice(0, 100).map((v) => (
-                        <tr key={v.id} className="hover:bg-white/[0.02] transition-all">
-                          <td className="py-3.5 px-4 font-medium text-white">{formatDate(v.timestamp)}</td>
-                          <td className="py-3.5 px-4 font-mono">{v.ip}</td>
-                          <td className="py-3.5 px-4">
-                            <span className="flex items-center gap-1.5">
-                              {getDeviceIcon(v.device)}
-                              {v.device}
-                            </span>
+                    ) : filteredVisitors.length > 0 ? (
+                      filteredVisitors.map((v) => (
+                        <tr key={v.id} className="hover:bg-white/[0.02] transition-colors">
+                          <td className="py-3 px-4 font-bold text-white flex items-center gap-2">
+                            {getDeviceIcon(v.device)}
+                            <span>{v.device}</span>
                           </td>
-                          <td className="py-3.5 px-4">{v.os}</td>
-                          <td className="py-3.5 px-4">{v.browser}</td>
-                          <td className="py-3.5 px-4 max-w-xs truncate text-[10px] text-gray-500" title={v.userAgent}>
-                            {v.userAgent}
-                          </td>
+                          <td className="py-3 px-4 text-gray-300">{v.os}</td>
+                          <td className="py-3 px-4 text-gray-300">{v.browser}</td>
+                          <td className="py-3 px-4 font-mono text-[11px] text-primary">{v.ip}</td>
+                          <td className="py-3 px-4 text-gray-400">{formatDate(v.timestamp)}</td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {filteredVisitors.length > 100 && (
-                    <div className="text-center text-[10px] text-gray-500 mt-4">
-                      Menampilkan 100 dari {filteredVisitors.length} logs pengunjung.
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-20 bg-white/[0.01] rounded-2xl border border-white/5">
-                  <Search className="w-8 h-8 text-gray-500 mx-auto" />
-                  <h3 className="text-sm font-bold text-white mt-3">Tidak Ada Data Kunjungan</h3>
-                  <p className="text-xs text-gray-400 mt-1.5 px-6">
-                    Belum ada data yang cocok dengan kriteria pencarian Anda.
-                  </p>
-                </div>
-              )}
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="text-center py-12 text-gray-500">
+                          Belum ada log pengunjung yang tercatat.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
             </div>
           </div>
         )}
+
       </div>
     </main>
   );
