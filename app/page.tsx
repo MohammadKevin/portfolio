@@ -891,7 +891,7 @@ export default function Home() {
                   </p>
 
                   <div className="flex flex-wrap gap-1.5 pt-2">
-                    {cert.skills.map((s) => (
+                    {Array.isArray(cert.skills) && cert.skills.map((s: string) => (
                       <span key={s} className="text-[10px] text-slate-300 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded font-mono">
                         {s}
                       </span>
