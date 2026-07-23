@@ -5,8 +5,8 @@ export interface Project {
   type: "Backend" | "Frontend" | "Fullstack";
   color: string;
   desc: string;
-  problem: string;
-  impact: string;
+  problem?: string;
+  impact?: string;
   tech: string[];
   demoUrl?: string;
   repoUrl?: string;

@@ -41,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={`scroll-smooth ${jetbrainsMono.variable} ${inter.variable}`}>
+    <html lang="id" suppressHydrationWarning className={`scroll-smooth ${jetbrainsMono.variable} ${inter.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{

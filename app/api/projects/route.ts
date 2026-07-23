@@ -14,67 +14,79 @@ const isSupabaseConfigured = !!(supabaseUrl && supabaseKey);
 const defaultProjects = [
   {
     id: "project-1",
-    title: "InvDocs",
-    category: "Document Management System",
+    title: "InvDocs - Digital Archive System",
+    category: "Digital Archive System",
     type: "Fullstack",
-    color: "from-blue-600 to-cyan-500",
-    desc: "Sistem berkinerja tinggi yang dirancang untuk pengarsipan dan manajemen dokumentasi digital perusahaan dengan enkripsi file.",
-    tech: ["Next.js", "Express.js", "PostgreSQL", "Prisma"],
+    color: "from-amber-600 to-yellow-500",
+    desc: "Sistem pengarsipan dan manajemen dokumen digital terstruktur untuk organisasi dengan enkripsi berkas dan hak akses bertingkat.",
+    problem: "Pengarsipan fisik yang berantakan dan lambatnya pencarian dokumen administratif lama.",
+    impact: "Mempercepat waktu pencarian berkas dari hitungan jam menjadi kurun waktu < 3 detik dengan indeks metadata terstruktur.",
+    tech: ["Next.js", "Express.js", "PostgreSQL", "Prisma", "Tailwind CSS"],
     demoUrl: "",
-    repoUrl: ""
+    repoUrl: "https://github.com/MohammadKevin/InvDocs-Archive"
   },
   {
     id: "project-2",
-    title: "Kasir App",
+    title: "Kasir App (POS Terminal)",
     category: "Point of Sale System",
     type: "Fullstack",
-    color: "from-indigo-600 to-blue-500",
-    desc: "Sistem kasir offline-first lengkap dengan pembuatan faktur, pemantauan stok, dan laporan keuangan komprehensif.",
-    tech: ["React.js", "Laravel", "MySQL", "Tailwind CSS"],
+    color: "from-emerald-600 to-teal-500",
+    desc: "Sistem kasir toko & UMKM dengan pencatatan transaksi real-time, cetak struk faktur, serta pembuatan laporan penjualan harian.",
+    problem: "Pencatatan kasir manual yang rawan selisih persediaan barang dan kesalahan kalkulasi kembalian.",
+    impact: "Menghilangkan selisih persediaan fisik dengan akurasi pemotongan stok otomatis 100% pada transaksi kasir.",
+    tech: ["React.js", "Express.js", "MySQL", "Prisma", "Tailwind CSS"],
     demoUrl: "",
     repoUrl: ""
   },
   {
     id: "project-3",
-    title: "Digital Archive",
+    title: "Inventory Management API & Engine",
+    category: "Backend Engine",
+    type: "Backend",
+    color: "from-cyan-600 to-blue-500",
+    desc: "RESTful API high-throughput untuk pelacakan persediaan gudang, multi-warehouse batch logging, dan notifikasi stok kritis.",
+    problem: "Lambatnya query pencarian stok barang dalam jumlah puluhan ribu baris data pada sistem gudang lama.",
+    impact: "Mempercepat query pencarian persediaan sebesar 40% setelah penerapan database indexing dan Prisma query tuning.",
+    tech: ["NestJS", "Node.js", "PostgreSQL", "Prisma", "Redis"],
+    demoUrl: "",
+    repoUrl: "https://github.com/MohammadKevin/inventory-backend-engine"
+  },
+  {
+    id: "project-4",
+    title: "Digital Public Record Platform",
     category: "Web Application",
     type: "Fullstack",
-    color: "from-cyan-600 to-blue-600",
-    desc: "Platform pengarsipan data publik dan catatan administratif, dibangun dengan fokus pada kecepatan respon dan keamanan berkas.",
+    color: "from-blue-600 to-indigo-500",
+    desc: "Platform pengarsipan data publik dan catatan administratif sekolah/organisasi dengan proteksi otentikasi JWT.",
+    problem: "Kebutuhan publikasi data arsip terbuka yang tetap menjamin kerahasiaan berkas internal.",
+    impact: "Sistem berhasil menangani ribuan pengunduhan berkas dokumen publik dengan pengamanan akses granular.",
     tech: ["Next.js", "Tailwind CSS", "Prisma", "MySQL"],
     demoUrl: "",
     repoUrl: ""
   },
   {
-    id: "project-4",
-    title: "Inventory Management System",
-    category: "Backend Development",
-    type: "Backend",
-    color: "from-blue-700 to-indigo-600",
-    desc: "RESTful API backend yang mendukung pelacakan barang real-time, peringatan batas stok otomatis, dan multi-warehouse logs.",
-    tech: ["Node.js", "Express", "JWT", "PostgreSQL"],
-    demoUrl: "",
-    repoUrl: ""
-  },
-  {
     id: "project-5",
-    title: "Portfolio Website",
-    category: "Frontend Development",
+    title: "Developer Terminal Portfolio",
+    category: "System Interface",
     type: "Frontend",
-    color: "from-blue-500 to-cyan-400",
-    desc: "Website portofolio interaktif dengan desain gelap modern dan dynamic accent theme untuk menampilkan karya dengan representasi premium.",
-    tech: ["Next.js", "Tailwind CSS v4", "TypeScript"],
-    demoUrl: "",
+    color: "from-purple-600 to-pink-500",
+    desc: "Website portofolio pribadi bertema IDE/Terminal developer tool dengan UI high-contrast, status diagnostics, dan system info viewer.",
+    problem: "Template portofolio SaaS generik yang tidak mencerminkan fokus arsitektur backend & system dev.",
+    impact: "Memberikan pengalaman visual unik bergaya system terminal dengan performa 100% Lighthouse score.",
+    tech: ["Next.js 16", "Tailwind CSS", "TypeScript"],
+    demoUrl: "https://mohammadkevin.dev",
     repoUrl: "https://github.com/MohammadKevin/my-portfolio"
   },
   {
     id: "project-6",
-    title: "School Project Dashboard",
-    category: "Dashboard UI",
+    title: "School System Admin Dashboard",
+    category: "Admin Dashboard",
     type: "Frontend",
-    color: "from-slate-800 to-blue-900",
-    desc: "Antarmuka dashboard kaya data untuk visualisasi metrik performa sekolah, statistik siswa, dan penjadwalan kelas.",
-    tech: ["React.js", "Chart.js", "Tailwind CSS"],
+    color: "from-slate-700 to-slate-900",
+    desc: "Dashboard monitoring metrik data akademik sekolah, visualisasi keaktifan siswa, dan pengelolaan jadwal kegiatan.",
+    problem: "Visualisasi data akademis kompleks yang sulit dibaca oleh staf pengajar.",
+    impact: "Menyederhanakan pemantauan data akademik dengan waktu pemuatan widget dashboard under 1 detik.",
+    tech: ["React.js", "Chart.js", "Tailwind CSS", "TypeScript"],
     demoUrl: "",
     repoUrl: ""
   }
@@ -93,6 +105,17 @@ async function supabaseFetch(endpoint: string, options: RequestInit = {}) {
       ...options.headers,
     },
   });
+}
+
+async function parseSupabaseError(res: Response, defaultPrefix: string) {
+  let errText = "";
+  try {
+    const errJson = await res.json();
+    errText = errJson.message || errJson.error || errJson.hint || JSON.stringify(errJson);
+  } catch {
+    errText = await res.text().catch(() => "");
+  }
+  return `${defaultPrefix}: ${errText || res.statusText} (${res.status})`;
 }
 
 // Local File helper
@@ -127,7 +150,8 @@ export async function GET() {
       // Fetch from Supabase
       const res = await supabaseFetch("/projects?select=*&order=created_at.desc");
       if (!res.ok) {
-        throw new Error(`Supabase error: ${res.statusText} (${res.status})`);
+        const errorMsg = await parseSupabaseError(res, "Supabase GET error");
+        throw new Error(errorMsg);
       }
       let projects = await res.json();
       
@@ -146,6 +170,13 @@ export async function GET() {
         }
       }
       
+      // Normalize demoUrl and repoUrl
+      projects = projects.map((p: any) => ({
+        ...p,
+        demoUrl: p.demoUrl ?? p.demo_url ?? p.demourl ?? "",
+        repoUrl: p.repoUrl ?? p.repo_url ?? p.repourl ?? ""
+      }));
+
       return NextResponse.json({ success: true, projects, source: "supabase" });
     } else {
       // Fallback to local files
@@ -182,8 +213,7 @@ export async function POST(request: NextRequest) {
     const newId = Math.random().toString(36).substring(2, 9);
 
     if (isSupabaseConfigured) {
-      // Insert to Supabase
-      const newProject = {
+      const baseProject: Record<string, any> = {
         id: newId,
         title,
         category,
@@ -191,22 +221,65 @@ export async function POST(request: NextRequest) {
         color,
         desc,
         tech: techArray,
-        demoUrl: demoUrl || "",
-        repoUrl: repoUrl || "",
         created_at: new Date().toISOString()
       };
-      
-      const res = await supabaseFetch("/projects", {
+
+      // Attempt 1: camelCase (demoUrl, repoUrl)
+      let payload: Record<string, any> = {
+        ...baseProject,
+        demoUrl: demoUrl || "",
+        repoUrl: repoUrl || ""
+      };
+
+      let res = await supabaseFetch("/projects", {
         method: "POST",
-        body: JSON.stringify([newProject]) // Array for POST in PostgREST
+        body: JSON.stringify([payload])
       });
 
       if (!res.ok) {
-        throw new Error(`Supabase POST error: ${res.statusText} (${res.status})`);
+        // Attempt 2: snake_case (demo_url, repo_url)
+        payload = {
+          ...baseProject,
+          demo_url: demoUrl || "",
+          repo_url: repoUrl || ""
+        };
+        res = await supabaseFetch("/projects", {
+          method: "POST",
+          body: JSON.stringify([payload])
+        });
+      }
+
+      if (!res.ok) {
+        // Attempt 3: Basic columns only
+        payload = { ...baseProject };
+        res = await supabaseFetch("/projects", {
+          method: "POST",
+          body: JSON.stringify([payload])
+        });
+      }
+
+      if (!res.ok) {
+        const errorMsg = await parseSupabaseError(res, "Supabase POST error");
+        throw new Error(errorMsg);
       }
       
-      const data = await res.json();
-      return NextResponse.json({ success: true, project: data[0] || newProject, source: "supabase" });
+      let data: any[] = [];
+      try {
+        data = await res.json();
+      } catch {
+        data = [];
+      }
+      const created = data[0] || payload;
+
+      return NextResponse.json({ 
+        success: true, 
+        project: {
+          ...created,
+          demoUrl: created.demoUrl ?? created.demo_url ?? demoUrl ?? "",
+          repoUrl: created.repoUrl ?? created.repo_url ?? repoUrl ?? ""
+        }, 
+        source: "supabase" 
+      });
     } else {
       // Insert to local file
       const projects = ensureFileAndRead();
@@ -246,29 +319,72 @@ export async function PUT(request: NextRequest) {
     const techArray = Array.isArray(tech) ? tech : tech.split(",").map((t: string) => t.trim()).filter(Boolean);
 
     if (isSupabaseConfigured) {
-      // Update in Supabase
-      const updatedProject = {
+      const baseProject: Record<string, any> = {
         title,
         category,
         type,
         color,
         desc,
-        tech: techArray,
+        tech: techArray
+      };
+
+      // Attempt 1: camelCase
+      let payload: Record<string, any> = {
+        ...baseProject,
         demoUrl: demoUrl || "",
         repoUrl: repoUrl || ""
       };
 
-      const res = await supabaseFetch(`/projects?id=eq.${id}`, {
+      let res = await supabaseFetch(`/projects?id=eq.${id}`, {
         method: "PATCH",
-        body: JSON.stringify(updatedProject)
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) {
-        throw new Error(`Supabase PATCH error: ${res.statusText} (${res.status})`);
+        // Attempt 2: snake_case
+        payload = {
+          ...baseProject,
+          demo_url: demoUrl || "",
+          repo_url: repoUrl || ""
+        };
+        res = await supabaseFetch(`/projects?id=eq.${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload)
+        });
       }
 
-      const data = await res.json();
-      return NextResponse.json({ success: true, project: data[0] || { id, ...updatedProject }, source: "supabase" });
+      if (!res.ok) {
+        // Attempt 3: Basic columns only
+        payload = { ...baseProject };
+        res = await supabaseFetch(`/projects?id=eq.${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload)
+        });
+      }
+
+      if (!res.ok) {
+        const errorMsg = await parseSupabaseError(res, "Supabase PATCH error");
+        throw new Error(errorMsg);
+      }
+
+      let data: any[] = [];
+      try {
+        data = await res.json();
+      } catch {
+        data = [];
+      }
+      const updated = data[0] || { id, ...baseProject, demoUrl, repoUrl };
+
+      return NextResponse.json({ 
+        success: true, 
+        project: {
+          ...updated,
+          id,
+          demoUrl: updated.demoUrl ?? updated.demo_url ?? demoUrl ?? "",
+          repoUrl: updated.repoUrl ?? updated.repo_url ?? repoUrl ?? ""
+        }, 
+        source: "supabase" 
+      });
     } else {
       // Update in local file
       const projects = ensureFileAndRead();
@@ -318,7 +434,8 @@ export async function DELETE(request: NextRequest) {
       });
 
       if (!res.ok) {
-        throw new Error(`Supabase DELETE error: ${res.statusText} (${res.status})`);
+        const errorMsg = await parseSupabaseError(res, "Supabase DELETE error");
+        throw new Error(errorMsg);
       }
 
       return NextResponse.json({ success: true, message: "Project deleted successfully", source: "supabase" });
@@ -342,3 +459,4 @@ export async function DELETE(request: NextRequest) {
     }, { status: 500 });
   }
 }
+

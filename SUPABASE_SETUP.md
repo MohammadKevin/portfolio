@@ -22,8 +22,16 @@ CREATE TABLE IF NOT EXISTS public.projects (
   color text NOT NULL,
   "desc" text NOT NULL,
   tech jsonb NOT NULL,
+  "demoUrl" text DEFAULT '',
+  "repoUrl" text DEFAULT '',
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- JIKA TABEL SUDAH ADA, JALANKAN SQL INI DI SUPABASE SQL EDITOR:
+ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS "demoUrl" text DEFAULT '';
+ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS "repoUrl" text DEFAULT '';
+ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS demo_url text DEFAULT '';
+ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS repo_url text DEFAULT '';
 
 -- Aktifkan Row Level Security (RLS)
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;

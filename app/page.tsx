@@ -35,10 +35,27 @@ const TEMPLATE_ID = "template_zt9llkk";
 const PUBLIC_KEY = "3qW5e407vXhAIdlX5";
 
 export default function Home() {
+  const [projectsList, setProjectsList] = useState<Project[]>(projectsData);
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("backend");
   const [copiedEmail, setCopiedEmail] = useState(false);
+
+  // Fetch live projects from API / Supabase
+  useEffect(() => {
+    async function fetchLiveProjects() {
+      try {
+        const res = await fetch("/api/projects");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.projects) && data.projects.length > 0) {
+          setProjectsList(data.projects);
+        }
+      } catch (err) {
+        console.error("Failed to fetch live projects:", err);
+      }
+    }
+    fetchLiveProjects();
+  }, []);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -98,7 +115,7 @@ export default function Home() {
   };
 
   // Filter projects
-  const filteredProjects = projectsData.filter((item) => {
+  const filteredProjects = projectsList.filter((item) => {
     const matchesCategory =
       activeCategory === "All" ||
       item.type.toLowerCase() === activeCategory.toLowerCase();
@@ -106,7 +123,7 @@ export default function Home() {
     const matchesSearch =
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.problem.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.problem && item.problem.toLowerCase().includes(searchQuery.toLowerCase())) ||
       item.tech.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return matchesCategory && matchesSearch;
@@ -514,43 +531,52 @@ export default function Home() {
               {filteredProjects.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-xl border border-slate-800 bg-[#0d1117] hover:border-amber-500/40 transition-all duration-300 flex flex-col justify-between p-6 shadow-xl"
+                  className="rounded-xl border border-slate-800 bg-[#0d1117] hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between p-6 relative overflow-hidden group h-full"
                 >
-                  <div className="flex flex-col gap-4">
+                  {/* Top Gradient Bar Accent */}
+                  <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${item.color && item.color.includes('from-') ? item.color : 'from-amber-500 to-yellow-500'} opacity-75 group-hover:opacity-100 transition-opacity`} />
+
+                  <div className="flex-1 flex flex-col justify-between gap-4">
                     
-                    {/* Card Header Tag */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">
-                        {item.category}
-                      </span>
-                      <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">
-                        {item.type}
-                      </span>
-                    </div>
+                    <div className="flex flex-col gap-3">
+                      {/* Card Header Tag */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">
+                          {item.category}
+                        </span>
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">
+                          {item.type}
+                        </span>
+                      </div>
 
-                    <h3 className="text-lg font-bold text-white font-sans">{item.title}</h3>
-                    <p className="text-xs text-slate-400 font-sans leading-relaxed">
-                      {item.desc}
-                    </p>
-
-                    {/* Problem Solved */}
-                    <div className="p-3 rounded bg-slate-950 border border-slate-800/80 flex flex-col gap-1 text-xs">
-                      <span className="text-[10px] text-rose-400 font-bold uppercase">$ problem.log:</span>
-                      <p className="text-slate-300 font-sans text-[11px] leading-snug">
-                        {item.problem}
+                      <h3 className="text-lg font-bold text-white font-sans tracking-tight group-hover:text-amber-400 transition-colors line-clamp-1">{item.title}</h3>
+                      <p className="text-xs text-slate-400 font-sans leading-relaxed line-clamp-2 min-h-[2.5rem]">
+                        {item.desc}
                       </p>
-                    </div>
 
-                    {/* Impact / Results */}
-                    <div className="p-3 rounded bg-slate-950 border border-slate-800/80 flex flex-col gap-1 text-xs">
-                      <span className="text-[10px] text-emerald-400 font-bold uppercase">$ impact.metric:</span>
-                      <p className="text-slate-300 font-sans text-[11px] leading-snug">
-                        {item.impact}
-                      </p>
+                      {/* Problem Solved */}
+                      {item.problem && (
+                        <div className="p-3 rounded bg-slate-950 border border-slate-800/80 flex flex-col gap-1 text-xs">
+                          <span className="text-[10px] text-rose-400 font-bold uppercase">$ problem.log:</span>
+                          <p className="text-slate-300 font-sans text-[11px] leading-snug line-clamp-2">
+                            {item.problem}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Impact / Results */}
+                      {item.impact && (
+                        <div className="p-3 rounded bg-slate-950 border border-slate-800/80 flex flex-col gap-1 text-xs">
+                          <span className="text-[10px] text-emerald-400 font-bold uppercase">$ impact.metric:</span>
+                          <p className="text-slate-300 font-sans text-[11px] leading-snug line-clamp-2">
+                            {item.impact}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Tech Badges */}
-                    <div className="flex flex-wrap gap-1.5 pt-1">
+                    <div className="flex flex-wrap gap-1.5 pt-2 mt-auto">
                       {item.tech.map((t) => (
                         <span
                           key={t}
@@ -563,7 +589,7 @@ export default function Home() {
 
                   </div>
 
-                  {/* Card Actions (Live Demo & Source Code - Hides if empty!) */}
+                  {/* Card Actions (Live Demo & Source Code - Pinned to bottom) */}
                   <div className="flex items-center justify-between gap-2 mt-6 pt-4 border-t border-slate-800">
                     <div className="flex items-center gap-2">
                       {item.demoUrl && item.demoUrl.length > 0 && (
@@ -599,7 +625,6 @@ export default function Home() {
                       $ detail --info
                     </a>
                   </div>
-
                 </div>
               ))}
             </div>
