@@ -11,7 +11,9 @@
       "Express.js",
       "PostgreSQL",
       "Prisma"
-    ]
+    ],
+    "demoUrl": "",
+    "repoUrl": ""
   },
   {
     "id": "project-2",
@@ -25,7 +27,9 @@
       "Laravel",
       "MySQL",
       "Tailwind CSS"
-    ]
+    ],
+    "demoUrl": "",
+    "repoUrl": ""
   },
   {
     "id": "project-3",
@@ -39,7 +43,9 @@
       "Tailwind CSS",
       "Prisma",
       "MySQL"
-    ]
+    ],
+    "demoUrl": "",
+    "repoUrl": ""
   },
   {
     "id": "project-4",
@@ -53,7 +59,9 @@
       "Express",
       "JWT",
       "PostgreSQL"
-    ]
+    ],
+    "demoUrl": "",
+    "repoUrl": ""
   },
   {
     "id": "project-5",
@@ -66,7 +74,9 @@
       "Next.js",
       "Tailwind CSS v4",
       "TypeScript"
-    ]
+    ],
+    "demoUrl": "",
+    "repoUrl": "https://github.com/MohammadKevin/my-portfolio"
   },
   {
     "id": "project-6",
@@ -79,6 +89,8 @@
       "React.js",
       "Chart.js",
       "Tailwind CSS"
-    ]
+    ],
+    "demoUrl": "",
+    "repoUrl": ""
   }
 ]

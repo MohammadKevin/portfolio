@@ -19,7 +19,9 @@ const defaultProjects = [
     type: "Fullstack",
     color: "from-blue-600 to-cyan-500",
     desc: "Sistem berkinerja tinggi yang dirancang untuk pengarsipan dan manajemen dokumentasi digital perusahaan dengan enkripsi file.",
-    tech: ["Next.js", "Express.js", "PostgreSQL", "Prisma"]
+    tech: ["Next.js", "Express.js", "PostgreSQL", "Prisma"],
+    demoUrl: "",
+    repoUrl: ""
   },
   {
     id: "project-2",
@@ -28,7 +30,9 @@ const defaultProjects = [
     type: "Fullstack",
     color: "from-indigo-600 to-blue-500",
     desc: "Sistem kasir offline-first lengkap dengan pembuatan faktur, pemantauan stok, dan laporan keuangan komprehensif.",
-    tech: ["React.js", "Laravel", "MySQL", "Tailwind CSS"]
+    tech: ["React.js", "Laravel", "MySQL", "Tailwind CSS"],
+    demoUrl: "",
+    repoUrl: ""
   },
   {
     id: "project-3",
@@ -37,7 +41,9 @@ const defaultProjects = [
     type: "Fullstack",
     color: "from-cyan-600 to-blue-600",
     desc: "Platform pengarsipan data publik dan catatan administratif, dibangun dengan fokus pada kecepatan respon dan keamanan berkas.",
-    tech: ["Next.js", "Tailwind CSS", "Prisma", "MySQL"]
+    tech: ["Next.js", "Tailwind CSS", "Prisma", "MySQL"],
+    demoUrl: "",
+    repoUrl: ""
   },
   {
     id: "project-4",
@@ -46,7 +52,9 @@ const defaultProjects = [
     type: "Backend",
     color: "from-blue-700 to-indigo-600",
     desc: "RESTful API backend yang mendukung pelacakan barang real-time, peringatan batas stok otomatis, dan multi-warehouse logs.",
-    tech: ["Node.js", "Express", "JWT", "PostgreSQL"]
+    tech: ["Node.js", "Express", "JWT", "PostgreSQL"],
+    demoUrl: "",
+    repoUrl: ""
   },
   {
     id: "project-5",
@@ -55,7 +63,9 @@ const defaultProjects = [
     type: "Frontend",
     color: "from-blue-500 to-cyan-400",
     desc: "Website portofolio interaktif dengan desain gelap modern dan dynamic accent theme untuk menampilkan karya dengan representasi premium.",
-    tech: ["Next.js", "Tailwind CSS v4", "TypeScript"]
+    tech: ["Next.js", "Tailwind CSS v4", "TypeScript"],
+    demoUrl: "",
+    repoUrl: "https://github.com/MohammadKevin/my-portfolio"
   },
   {
     id: "project-6",
@@ -64,7 +74,9 @@ const defaultProjects = [
     type: "Frontend",
     color: "from-slate-800 to-blue-900",
     desc: "Antarmuka dashboard kaya data untuk visualisasi metrik performa sekolah, statistik siswa, dan penjadwalan kelas.",
-    tech: ["React.js", "Chart.js", "Tailwind CSS"]
+    tech: ["React.js", "Chart.js", "Tailwind CSS"],
+    demoUrl: "",
+    repoUrl: ""
   }
 ];
 
@@ -160,7 +172,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, category, type, color, desc, tech } = body;
+    const { title, category, type, color, desc, tech, demoUrl, repoUrl } = body;
 
     if (!title || !category || !type || !color || !desc || !tech) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
@@ -179,6 +191,8 @@ export async function POST(request: NextRequest) {
         color,
         desc,
         tech: techArray,
+        demoUrl: demoUrl || "",
+        repoUrl: repoUrl || "",
         created_at: new Date().toISOString()
       };
       
@@ -203,7 +217,9 @@ export async function POST(request: NextRequest) {
         type,
         color,
         desc,
-        tech: techArray
+        tech: techArray,
+        demoUrl: demoUrl || "",
+        repoUrl: repoUrl || ""
       };
       projects.unshift(newProject);
       writeLocalProjects(projects);
@@ -221,7 +237,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, title, category, type, color, desc, tech } = body;
+    const { id, title, category, type, color, desc, tech, demoUrl, repoUrl } = body;
 
     if (!id || !title || !category || !type || !color || !desc || !tech) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
@@ -237,7 +253,9 @@ export async function PUT(request: NextRequest) {
         type,
         color,
         desc,
-        tech: techArray
+        tech: techArray,
+        demoUrl: demoUrl || "",
+        repoUrl: repoUrl || ""
       };
 
       const res = await supabaseFetch(`/projects?id=eq.${id}`, {
@@ -267,7 +285,9 @@ export async function PUT(request: NextRequest) {
         type,
         color,
         desc,
-        tech: techArray
+        tech: techArray,
+        demoUrl: demoUrl || "",
+        repoUrl: repoUrl || ""
       };
 
       writeLocalProjects(projects);

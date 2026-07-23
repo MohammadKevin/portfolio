@@ -1,21 +1,37 @@
 import type { Metadata } from "next";
+import { JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Mohammad Kevin - Fullstack & Backend Developer",
-  description: "Portfolio of Mohammad Kevin, a Fullstack & Backend Developer specializing in high-performance APIs, database optimization, and scalable web applications using Node.js, Laravel, React, and Next.js.",
+  title: "Mohammad Kevin | Backend & Fullstack Developer",
+  description: "Portfolio of Mohammad Kevin, Fullstack & Backend Developer based in Malang, Indonesia. Specializing in Next.js, NestJS, Express, Prisma, PostgreSQL, and MySQL.",
   keywords: [
     "Mohammad Kevin",
     "Backend Developer",
     "Fullstack Developer",
     "Developer Malang",
-    "Indonesia",
-    "Node.js Developer",
-    "Laravel Developer",
-    "Next.js Portfolio",
-    "API Specialist"
+    "SMK Telkom Malang",
+    "Next.js Developer",
+    "NestJS Developer",
+    "Express.js",
+    "Prisma ORM",
+    "PostgreSQL",
+    "MySQL",
+    "Terminal Portfolio"
   ].join(", "),
 };
 
@@ -25,15 +41,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="id" className={`scroll-smooth ${jetbrainsMono.variable} ${inter.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
-                  const savedTheme = localStorage.getItem('kevin-portfolio-theme') || 'blue';
-                  if (savedTheme !== 'blue') {
+                  const savedTheme = localStorage.getItem('kevin-portfolio-theme') || 'amber';
+                  if (savedTheme !== 'amber') {
                     document.documentElement.setAttribute('data-theme', savedTheme);
                   }
                 } catch (e) {}
@@ -42,7 +58,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased bg-background text-foreground min-h-screen transition-colors duration-500">
+      <body className="antialiased bg-[#090d16] text-slate-300 min-h-screen font-sans selection:bg-amber-400/20 selection:text-amber-300">
         <Navbar />
         {children}
         <Footer />

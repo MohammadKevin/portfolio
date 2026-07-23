@@ -1,1269 +1,878 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import * as emailjs from "@emailjs/browser";
 import {
-  Settings,
+  Terminal,
+  CheckCircle2,
   Code2,
   Database,
-  Wrench,
-  Wind,
-  FlaskConical,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  Copy,
-  Rocket,
-  Send,
-  MapPin,
+  ExternalLink,
+  Layers,
   Mail,
+  MapPin,
+  MessageSquare,
   Phone,
-  SearchX,
+  Rocket,
+  Search,
+  Settings,
+  Server,
+  UserCheck,
+  Wrench,
+  AlertTriangle,
+  Send,
+  XCircle,
+  Copy
 } from "lucide-react";
 
-const SERVICE_ID  = "service_rmat5kp";
+import { whoamiData } from "@/data/whoami";
+import { skillCategories } from "@/data/skills";
+import { projectsData, Project } from "@/data/projects";
+import { timelineLogs } from "@/data/timeline";
+
+const SERVICE_ID = "service_rmat5kp";
 const TEMPLATE_ID = "template_zt9llkk";
-const PUBLIC_KEY  = "q_nuzyb4WLIy6kboy";
-
-const stats = [
-  { value: "2 Tahun", label: "Pengalaman Kerja" },
-  { value: "35+", label: "Proyek Selesai" },
-];
-
-const skillCategories = [
-  {
-    id: "backend",
-    name: "Backend Development",
-    icon: Settings,
-    skills: [
-      { name: "Node.js & Express.js", level: 90 },
-      { name: "Laravel (PHP)", level: 65 },
-      { name: "RESTful API Design", level: 92 },
-      { name: "Autentikasi (JWT, OAuth)", level: 88 },
-    ],
-  },
-  {
-    id: "frontend",
-    name: "Frontend Development",
-    icon: Code2,
-    skills: [
-      { name: "React.js & Next.js", level: 85 },
-      { name: "Tailwind CSS", level: 90 },
-      { name: "TypeScript", level: 80 },
-      { name: "Responsive Design", level: 95 },
-    ],
-  },
-  {
-    id: "database",
-    name: "Database Management",
-    icon: Database,
-    skills: [
-      { name: "MySQL", level: 88 },
-      { name: "PostgreSQL", level: 82 },
-      { name: "Prisma ORM", level: 85 },
-      { name: "Query Optimization", level: 80 },
-    ],
-  },
-  {
-    id: "tools",
-    name: "Development Tools",
-    icon: Wrench,
-    skills: [
-      { name: "Git & GitHub", level: 88 },
-      { name: "Postman & API Testing", level: 90 },
-      { name: "Figma (UI Design)", level: 65 },
-    ],
-  },
-];
-
-const services = [
-  {
-    title: "Backend API Architecture",
-    desc: "Mendesain dan memprogram RESTful & GraphQL API yang aman, modular, dan cepat dengan integrasi JWT/OAuth, rate limiting, dan dokumentasi OpenAPI.",
-    icon: (
-      <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-      </svg>
-    ),
-  },
-  {
-    title: "Fullstack Web Apps",
-    desc: "Membangun sistem web interaktif berkinerja tinggi menggunakan React.js dan Next.js yang terhubung mulus dengan database dan server eksternal.",
-    icon: (
-      <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
-    title: "Database Optimization",
-    desc: "Merancang skema database relasional (normalization), optimasi indeks query SQL, caching, dan manajemen ORM (Prisma/Sequelize) untuk data skala menengah.",
-    icon: (
-      <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-      </svg>
-    ),
-  },
-  {
-    title: "System Integration",
-    desc: "Menghubungkan layanan pihak ketiga (payment gateway, mailer, SMS), integrasi file storage cloud, serta mendeploy aplikasi ke Linux VPS.",
-    icon: (
-      <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
-      </svg>
-    ),
-  },
-];
-
-const timelineItems = [
-  {
-    period: "2024 - Sekarang",
-    role: "Fullstack & Backend Developer (Freelance)",
-    company: "Klien & Usaha Lokal",
-    desc: "Mendesain dan mengembangkan solusi web kustom seperti Point of Sale offline-first dengan sinkronisasi otomatis, aplikasi pengarsipan digital tingkat instansi, dan manajemen logistik.",
-    tech: ["Next.js", "Laravel", "MySQL", "PostgreSQL", "Tailwind CSS"],
-  },
-  {
-    period: "2023 - 2024",
-    role: "Backend Specialist Partner",
-    company: "Kolaborasi Tim Proyek",
-    desc: "Fokus pada arsitektur API backend yang scalable, mengimplementasikan sistem multi-warehouse inventory tracker, merancang keamanan JWT auth, dan mempercepat respons query SQL hingga 40%.",
-    tech: ["Node.js", "Express.js", "Prisma ORM", "MySQL", "Postman"],
-  },
-  {
-    period: "2022 - 2023",
-    role: "Self-Taught Developer Study",
-    company: "Eksplorasi Mandiri",
-    desc: "Mempelajari rekayasa perangkat lunak dasar, struktur algoritma pemrograman web terstruktur (PHP & JavaScript), serta konfigurasi server database lokal.",
-    tech: ["PHP", "JavaScript", "Bootstrap", "MySQL", "Git"],
-  },
-];
-
-const defaultPortfolioItems = [
-  {
-    title: "InvDocs",
-    category: "Document Management System",
-    type: "Fullstack",
-    color: "from-blue-600 to-cyan-500",
-    desc: "Sistem berkinerja tinggi yang dirancang untuk pengarsipan dan manajemen dokumentasi digital perusahaan dengan enkripsi file.",
-    tech: ["Next.js", "Express.js", "PostgreSQL", "Prisma"],
-  },
-  {
-    title: "Kasir App",
-    category: "Point of Sale System",
-    type: "Fullstack",
-    color: "from-indigo-600 to-blue-500",
-    desc: "Sistem kasir offline-first lengkap dengan pembuatan faktur, pemantauan stok, dan laporan keuangan komprehensif.",
-    tech: ["React.js", "Laravel", "MySQL", "Tailwind CSS"],
-  },
-  {
-    title: "Digital Archive",
-    category: "Web Application",
-    type: "Fullstack",
-    color: "from-cyan-600 to-blue-600",
-    desc: "Platform pengarsipan data publik dan catatan administratif, dibangun dengan fokus pada kecepatan respon dan keamanan berkas.",
-    tech: ["Next.js", "Tailwind CSS", "Prisma", "MySQL"],
-  },
-  {
-    title: "Inventory Management System",
-    category: "Backend Development",
-    type: "Backend",
-    color: "from-blue-700 to-indigo-600",
-    desc: "RESTful API backend yang mendukung pelacakan barang real-time, peringatan batas stok otomatis, dan multi-warehouse logs.",
-    tech: ["Node.js", "Express", "JWT", "PostgreSQL"],
-  },
-  {
-    title: "Portfolio Website",
-    category: "Frontend Development",
-    type: "Frontend",
-    color: "from-blue-500 to-cyan-400",
-    desc: "Website portofolio interaktif dengan desain gelap modern dan dynamic accent theme untuk menampilkan karya dengan representasi premium.",
-    tech: ["Next.js", "Tailwind CSS v4", "TypeScript"],
-  },
-  {
-    title: "School Project Dashboard",
-    category: "Dashboard UI",
-    type: "Frontend",
-    color: "from-slate-800 to-blue-900",
-    desc: "Antarmuka dashboard kaya data untuk visualisasi metrik performa sekolah, statistik siswa, dan penjadwalan kelas.",
-    tech: ["React.js", "Chart.js", "Tailwind CSS"],
-  },
-];
-
-type ToastType = "success" | "error" | null;
-
-interface ProjectItem {
-  id?: string;
-  title: string;
-  category: string;
-  type: string;
-  color: string;
-  desc: string;
-  tech: string[];
-}
-
-interface FormState {
-  firstName: string;
-  lastName: string;
-  email: string;
-  subject: string;
-  message: string;
-}
-
-const INITIAL_FORM: FormState = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  subject: "",
-  message: "",
-};
+const PUBLIC_KEY = "3qW5e407vXhAIdlX5";
 
 export default function Home() {
-  const [form, setForm] = useState<FormState>(INITIAL_FORM);
-  const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; type: ToastType }>({ msg: "", type: null });
-  const [toastVisible, setToastVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState("backend");
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [portfolioItems, setPortfolioItems] = useState<ProjectItem[]>(defaultPortfolioItems);
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [activeTab, setActiveTab] = useState("backend");
+  const [copiedEmail, setCopiedEmail] = useState(false);
 
-  const [offsetX, setOffsetX] = useState(0);
-  const [offsetY, setOffsetY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  const physicsRef = useRef({
-    offsetX: 0,
-    offsetY: 0,
-    vx: 0,
-    vy: 0,
-    isDragging: false,
-    dragStart: { x: 0, y: 0 },
-    lastTime: 0,
+  // Form State
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
   });
 
-  const animationFrameId = useRef<number | null>(null);
+  const [formStatus, setFormStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const animatePhysics = (time: number) => {
-    const state = physicsRef.current;
-    if (state.isDragging) return;
-    
-    if (!state.lastTime) {
-      state.lastTime = time;
-      animationFrameId.current = requestAnimationFrame(animatePhysics);
-      return;
-    }
-    
-    let dt = (time - state.lastTime) / 1000;
-    state.lastTime = time;
-    
-    if (dt <= 0) dt = 0.016;
-    if (dt > 0.03) dt = 0.03;
-
-    if (isNaN(state.offsetX) || isNaN(state.offsetY)) {
-      state.offsetX = 0;
-      state.offsetY = 0;
-      state.vx = 0;
-      state.vy = 0;
-      setOffsetX(0);
-      setOffsetY(0);
-      state.lastTime = 0;
-      animationFrameId.current = null;
-      return;
-    }
-
-    const k = 150;
-    const c = 7;
-
-    const ax = -k * state.offsetX - c * state.vx;
-    const ay = -k * state.offsetY - c * state.vy;
-
-    state.vx += ax * dt;
-    state.vy += ay * dt;
-    state.offsetX += state.vx * dt;
-    state.offsetY += state.vy * dt;
-
-    setOffsetX(state.offsetX);
-    setOffsetY(state.offsetY);
-
-    if (
-      Math.abs(state.offsetX) < 0.05 && Math.abs(state.vx) < 0.05 &&
-      Math.abs(state.offsetY) < 0.05 && Math.abs(state.vy) < 0.05
-    ) {
-      state.offsetX = 0;
-      state.offsetY = 0;
-      state.vx = 0;
-      state.vy = 0;
-      setOffsetX(0);
-      setOffsetY(0);
-      state.lastTime = 0;
-      animationFrameId.current = null;
-      return;
-    }
-
-    animationFrameId.current = requestAnimationFrame(animatePhysics);
-  };
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
-    physicsRef.current.isDragging = true;
-    physicsRef.current.dragStart = { x: e.clientX, y: e.clientY };
-    physicsRef.current.vx = 0;
-    physicsRef.current.vy = 0;
-    setIsDragging(true);
-    
-    if (animationFrameId.current) {
-      cancelAnimationFrame(animationFrameId.current);
-      animationFrameId.current = null;
-    }
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!physicsRef.current.isDragging) return;
-    const dx = e.clientX - physicsRef.current.dragStart.x;
-    const dy = e.clientY - physicsRef.current.dragStart.y;
-
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    const maxLength = 200;
-
-    let targetX = dx;
-    let targetY = dy;
-
-    if (distance > maxLength && distance > 0) {
-      targetX = (dx / distance) * maxLength;
-      targetY = (dy / distance) * maxLength;
-    }
-
-    if (targetY < -120) {
-      targetY = -120;
-    }
-
-    physicsRef.current.offsetX = targetX;
-    physicsRef.current.offsetY = targetY;
-
-    setOffsetX(targetX);
-    setOffsetY(targetY);
-  };
-
-  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!physicsRef.current.isDragging) return;
-    e.currentTarget.releasePointerCapture(e.pointerId);
-    physicsRef.current.isDragging = false;
-    setIsDragging(false);
-    
-    physicsRef.current.lastTime = 0;
-    
-    if (animationFrameId.current) {
-      cancelAnimationFrame(animationFrameId.current);
-    }
-    animationFrameId.current = requestAnimationFrame(animatePhysics);
-  };
-
-  const lanyardLength = Math.sqrt(offsetX * offsetX + (335 + offsetY) * (335 + offsetY));
-  const lanyardAngle = -Math.atan2(offsetX, 335 + offsetY) * (180 / Math.PI);
-  const cardRotation = lanyardAngle * 0.9 + (isDragging ? 0 : -offsetX * 0.05);
-
-  useEffect(() => {
-    fetch("/api/visit", { method: "POST" }).catch(console.error);
-
-    // Fetch dynamic projects from API
-    fetch("/api/projects")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.projects && data.projects.length > 0) {
-          setPortfolioItems(data.projects);
-        }
-      })
-      .catch((err) => console.error("Error fetching dynamic projects:", err));
-
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  const showToast = (msg: string, type: ToastType) => {
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    setToast({ msg, type });
-    setToastVisible(true);
-    toastTimer.current = setTimeout(() => setToastVisible(false), 3500);
-  };
-
-  const handleChange = (
+  const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const validate = (): boolean => {
-    const required: (keyof FormState)[] = ["firstName", "email", "subject", "message"];
-    for (const key of required) {
-      if (!form[key].trim()) {
-        showToast("Mohon isi semua bidang wajib.", "error");
-        return false;
-      }
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      showToast("Format email tidak valid.", "error");
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!formData.name || !formData.email || !formData.message) {
+      setFormStatus("error");
+      setErrorMessage("Harap isi semua kolom perintah sebelum mengirim.");
+      return;
+    }
 
-    setLoading(true);
+    setFormStatus("loading");
+    setErrorMessage("");
+
     try {
       await emailjs.send(
         SERVICE_ID,
         TEMPLATE_ID,
         {
-          from_name:  `${form.firstName}${form.lastName ? " " + form.lastName : ""}`,
-          from_email: form.email,
-          subject:    form.subject,
-          message:    form.message,
-          to_email:   "kvn4.200581@gmail.com",
+          from_name: formData.name,
+          from_email: formData.email,
+          message: formData.message,
         },
         PUBLIC_KEY
       );
-      showToast("Pesan berhasil dikirim!", "success");
-      setForm(INITIAL_FORM);
-    } catch (err) {
-      console.error(err);
-      showToast("Gagal mengirim. Cek konfigurasi EmailJS.", "error");
-    } finally {
-      setLoading(false);
+
+      setFormStatus("success");
+      setFormData({ name: "", email: "", message: "" });
+    } catch (err: any) {
+      console.error("EmailJS Error:", err);
+      setFormStatus("error");
+      setErrorMessage("Gagal mengirim pesan via terminal. Silakan coba via WhatsApp/Email langsung.");
     }
   };
 
   const copyEmailToClipboard = () => {
     navigator.clipboard.writeText("kvn4.200581@gmail.com");
-    showToast("Email berhasil disalin ke clipboard!", "success");
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2000);
   };
 
+  // Filter projects
+  const filteredProjects = projectsData.filter((item) => {
+    const matchesCategory =
+      activeCategory === "All" ||
+      item.type.toLowerCase() === activeCategory.toLowerCase();
 
-  const filteredProjects = portfolioItems.filter((item) => {
-    const matchesCategory = activeCategory === "All" || item.type === activeCategory;
     const matchesSearch =
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.tech.some((t: string) => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      item.category.toLowerCase().includes(searchQuery.toLowerCase());
+      item.problem.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.tech.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
+
     return matchesCategory && matchesSearch;
   });
 
-  const inputClass =
-    "px-4 py-3.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm text-white bg-white/5 focus:bg-white/10 transition-all w-full";
-
   return (
-    <main className="relative min-h-screen overflow-hidden">
+    <main className="min-h-screen bg-[#090d16] text-slate-300 relative overflow-hidden bg-grid-pattern selection:bg-amber-400/20 selection:text-amber-300">
+      
+      {/* Ambient background glows */}
+      <div className="absolute top-20 left-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-[35%] right-10 w-96 h-96 bg-cyan-500/5 rounded-full blur-[140px] pointer-events-none" />
 
-      <div className="absolute top-[5%] left-[-15%] w-[35rem] h-[35rem] bg-primary/20 glow-blob animate-glow-1" />
-      <div className="absolute top-[35%] right-[-15%] w-[40rem] h-[40rem] bg-secondary/15 glow-blob animate-glow-2" />
-      <div className="absolute bottom-[10%] left-[50%] -translate-x-1/2 w-[35rem] h-[35rem] bg-primary/20 glow-blob animate-glow-3" />
-
-
-      <div
-        className={`fixed bottom-6 right-6 z-55 px-6 py-4 rounded-2xl text-white text-sm font-semibold shadow-2xl transition-all duration-300 flex items-center gap-3 ${
-          toastVisible
-            ? "opacity-100 translate-y-0 scale-100"
-            : "opacity-0 translate-y-8 scale-90 pointer-events-none"
-        } ${toast.type === "success" ? "bg-primary border border-primary/30" : "bg-rose-600 border border-rose-500/30"}`}
-      >
-        {toast.type === "success" ? (
-          <CheckCircle2 className="w-5 h-5 shrink-0" />
-        ) : (
-          <AlertTriangle className="w-5 h-5 shrink-0" />
-        )}
-        <span>{toast.msg}</span>
-      </div>
-
-
-      <section
-        id="home"
-        className="relative min-h-screen flex items-center pt-28 pb-16 z-10"
-      >
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-
-          <div className="flex flex-col gap-6">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-semibold px-4.5 py-2 rounded-full w-fit border border-primary/20">
-              <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-              Tersedia Untuk Pekerjaan Lepas (Freelance)
-            </div>
-
-            <h1 className="text-4xl sm:text-5xl lg:text-7.5xl font-extrabold text-white leading-tight tracking-tight">
-              Backend &{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-                Fullstack
-              </span>{" "}
-              Developer
-            </h1>
-
-            <p className="text-gray-400 text-base sm:text-lg leading-relaxed max-w-lg">
-              Halo, saya <span className="text-white font-semibold">Mohammad Kevin</span>. Saya membangun arsitektur web service yang aman, handal, dan berkinerja tinggi, berspesialisasi dalam Node.js, Laravel, dan optimalisasi database.
-            </p>
-
-
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2">
-              <a
-                href="#contact"
-                className="inline-flex items-center gap-2 px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-primary to-secondary text-gray-950 font-bold rounded-full shadow-lg shadow-primary/10 hover:shadow-primary/20 hover:-translate-y-0.5 transition-all duration-300 text-sm sm:text-base"
-              >
-                Hubungi Saya
-                <Rocket className="w-4 h-4 sm:w-5 sm:h-5" />
-              </a>
-              <a
-                href="#about"
-                className="px-6 py-3 sm:px-8 sm:py-4 border border-white/10 hover:border-primary text-white hover:text-primary font-semibold rounded-full hover:-translate-y-0.5 transition-all duration-300 text-sm sm:text-base"
-              >
-                Tentang Saya
-              </a>
-            </div>
-
-
-            <div className="flex flex-wrap items-center gap-6 sm:gap-10 mt-8 pt-8 border-t border-white/5">
-              {stats.map((s) => (
-                <div key={s.label} className="flex flex-col gap-1">
-                  <span className="text-3xl sm:text-4xl font-extrabold text-white">{s.value}</span>
-                  <span className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-widest font-semibold">{s.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="relative flex justify-center lg:justify-end w-full font-sans">
-            <div className={`relative w-full max-w-sm h-[430px] sm:h-[480px] flex justify-center items-start overflow-visible select-none scale-85 min-[360px]:scale-90 min-[400px]:scale-95 sm:scale-100 origin-top ${isMobile ? "animate-float" : ""}`}>
+      {/* ================= HERO SECTION ================= */}
+      <section id="hero" className="pt-32 pb-20 relative z-10 font-mono">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            {/* Left Col: Text & Identification */}
+            <div className="lg:col-span-6 flex flex-col gap-5">
               
-              <div className="absolute top-10 left-2 p-3 bg-slate-900/90 border border-white/10 rounded-2xl flex items-center gap-2 shadow-lg hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 select-none z-10 hidden md:flex">
-                <Settings className="w-5 h-5 text-primary" strokeWidth={1.75} />
-                <span className="text-[10px] font-bold text-white uppercase tracking-wider">NodeJS Expert</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-slate-900 border border-slate-800 text-xs w-fit">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-amber-400 font-bold">$ whoami --verbose</span>
               </div>
 
-              <div className="absolute bottom-16 right-2 p-3 bg-slate-900/90 border border-white/10 rounded-2xl flex items-center gap-2 shadow-lg hover:border-secondary/40 hover:-translate-y-1 transition-all duration-300 select-none z-10 hidden md:flex">
-                <Database className="w-5 h-5 text-primary" strokeWidth={1.75} />
-                <span className="text-[10px] font-bold text-white uppercase tracking-wider">DB Optimizer</span>
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight font-sans tracking-tight">
+                Mohammad Kevin
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-2 text-sm sm:text-base font-bold">
+                <span className="text-amber-400 px-2 py-0.5 rounded bg-amber-400/10 border border-amber-500/30">
+                  Backend & Fullstack Developer
+                </span>
+                <span className="text-slate-500">|</span>
+                <span className="text-slate-400">SMK Telkom Malang</span>
               </div>
 
-              {!isMobile && (
-                <div
-                  className="absolute origin-top bg-gradient-to-r from-slate-500 via-slate-300 to-slate-600 shadow-lg"
-                  style={{
-                    left: "50%",
-                    top: "-300px",
-                    width: "8px",
-                    height: `${lanyardLength}px`,
-                    transform: `translateX(-50%) rotate(${lanyardAngle}deg)`,
-                    transition: isDragging ? "none" : "height 0.05s ease-out, transform 0.05s ease-out",
-                    zIndex: 20,
-                    borderRadius: "9999px"
-                  }}
-                >
-                  <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_1px,rgba(0,0,0,0.15)_1px,rgba(0,0,0,0.15)_2px)] rounded-full" />
-
-                  <div 
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[60%] w-5 h-7 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-400 border border-white/20 rounded-md shadow-md flex flex-col items-center justify-between py-1 animate-pulse"
-                    style={{ zIndex: 35 }}
-                  >
-                    <div className="w-full h-[2px] bg-slate-500/50" />
-                    <div className="w-[10px] h-[10px] bg-slate-900 border border-white/10 rounded-full" />
-                  </div>
-                </div>
-              )}
-
-              <div
-                onPointerDown={isMobile ? undefined : handlePointerDown}
-                onPointerMove={isMobile ? undefined : handlePointerMove}
-                onPointerUp={isMobile ? undefined : handlePointerUp}
-                onPointerCancel={isMobile ? undefined : handlePointerUp}
-                className={`absolute w-[310px] h-[450px] origin-top rounded-[28px] bg-gradient-to-br from-slate-900/95 via-blue-950/85 to-slate-950/95 border-2 border-sky-400/40 shadow-[0_25px_60px_rgba(0,0,0,0.8),0_0_30px_rgba(14,165,233,0.15)] flex flex-col p-4.5 select-none ${
-                  isMobile ? "" : "cursor-grab active:cursor-grabbing cursor-grab"
-                } ${
-                  isDragging ? "" : "transition-transform duration-75 ease-out"
-                }`}
-                style={{
-                  left: "50%",
-                  top: "35px",
-                  transform: isMobile
-                    ? "translateX(-50%)"
-                    : `translate(calc(-50% + ${offsetX}px), ${offsetY}px) rotate(${cardRotation}deg)`,
-                  transformOrigin: "50% 0%",
-                  touchAction: isMobile ? "auto" : "none",
-                  zIndex: 30
-                }}
-              >
-                <div className="absolute inset-0 rounded-[26px] bg-gradient-to-tr from-white/0 via-white/5 to-white/10 pointer-events-none z-10" />
-
-                <div className="w-10 h-2.5 bg-slate-950 rounded-full mx-auto mb-4 border border-white/5 shadow-inner opacity-20" />
-
-                <div className="flex items-center gap-3.5 mb-4 px-1">
-                  <div className="relative w-11 h-11 rounded-full bg-gradient-to-br from-slate-800 to-slate-950 border-2 border-sky-400/50 flex items-center justify-center shadow-lg shadow-sky-950/50 overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1/2 bg-white/5 skew-y-12" />
-                    <span className="text-sky-400 font-black text-lg italic tracking-tighter">KV</span>
-                  </div>
-
-                  <div className="flex flex-col text-left justify-center">
-                    <span className="text-[9px] font-black text-white/90 tracking-wider">KEVIN'S</span>
-                    <span className="text-[9px] font-black text-white/90 tracking-wider -mt-0.5">PROFESSIONAL ID</span>
-                    <span className="text-[7.5px] font-extrabold text-sky-400 tracking-wider mt-0.5 leading-none">
-                      SENIOR BACKEND &<br />FULLSTACK DEVELOPER
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 px-1 items-start">
-                  
-                  <div className="w-[42%] flex flex-col gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-slate-950/60 border border-white/5 flex items-center justify-center text-white/40 font-bold text-sm shadow-inner">
-                      M
-                    </div>
-
-                    <div className="flex items-center justify-center px-1.5 py-0.5 bg-sky-950/60 border border-sky-400/30 rounded-full text-[6px] font-bold text-sky-300 w-fit gap-1 shadow-sm">
-                      <Settings className="w-2 h-2" strokeWidth={2} />
-                      <span className="tracking-wider">NODEJS EXPERT</span>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
-                        NODE.JS
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
-                        <span className="text-[8px] font-black text-white leading-none">▲</span>
-                        NEXT.JS
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
-                        <Wind className="w-2 h-2 text-sky-400" strokeWidth={2.5} />
-                        TAILWIND
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-sm shadow-red-500/50" />
-                        LARAVEL
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
-                        <Database className="w-2 h-2 text-sky-400" strokeWidth={2.5} />
-                        DATABASE OPT.
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-950/60 border border-white/5 rounded-lg text-[7px] font-extrabold text-slate-300 shadow-sm">
-                        <FlaskConical className="w-2 h-2 text-sky-400" strokeWidth={2.5} />
-                         QA & TESTING
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="w-[58%] flex flex-col items-stretch">
-                    <div className="relative w-[140px] h-[140px] mx-auto rounded-[20px] overflow-hidden border-2 border-sky-400/50 shadow-[0_0_15px_rgba(56,189,248,0.2)] bg-slate-950 flex items-center justify-center">
-                      <div className="absolute inset-0 bg-[linear-gradient(rgba(56,189,248,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.12)_1px,transparent_1px)] bg-[size:5px_5px] pointer-events-none" />
-                      
-                      <img
-                        src="/images/logo.png"
-                        alt="Mohammad Kevin"
-                        onError={(e) => {
-                          e.currentTarget.src = "/images/foto.png";
-                        }}
-                        className="w-full h-full object-cover z-10 select-none pointer-events-none grayscale"
-                      />
-                      
-                      <div className="absolute inset-0 border border-sky-400/20 rounded-[18px] pointer-events-none z-20" />
-                    </div>
-
-                    <div className="mt-2.5 flex flex-col text-left gap-0.5 px-1">
-                      <h4 className="text-[10.5px] font-black text-white uppercase tracking-wide">
-                        MOHAMMAD KEVIN
-                      </h4>
-                      <span className="text-[7.5px] font-bold text-white/60 leading-none">
-                        Backend & Fullstack Developer
-                      </span>
-                      <span className="text-[6.5px] font-extrabold text-sky-400 leading-none mt-0.5">
-                        Exp: 2 Years | Projects: 35+
-                      </span>
-                    </div>
-
-                    <div className="mt-3.5 flex justify-end px-1">
-                      <div className="bg-white p-0.5 rounded shadow-lg shadow-sky-950/20">
-                        <svg className="w-[42px] h-[42px]" viewBox="0 0 29 29" shapeRendering="crispEdges">
-                          <path fill="#000" d="M0 0h7v7H0zm2 2h3v3H2zm8-2h1v1h-1zm1 1h1v1h-1zm-1 1h1v1h-1zm3-3h7v7h-7zm2 2h3v3H20zm-8 4h1v1h-1zm1 1h1v1h-1zm4-1h3v1h-3zm0 2h1v1h-1zm2 0h1v1h-1zm-7 2v1h1v-1zm1 1h1v1h-1zm1-2h1v1h-1zm2 1h1v1h-1zm3-1h1v1h-1zm1 1h1v1h-1zm-5 2h1v1h-1zm1 1h1v1h-1zm4-1h1v1h-1zm-10 2h7v7H0zm2 2h3v3H2zm11-2h1v1h-1zm2 1h1v1h-1zm-1-1h1v1h-1zm3 2h1v1h-1zm1-1h1v1h-1zm-4 3h3v1h-3zm0 2h1v1h-1zm2 0h1v1h-1zm4-5h1v1h-1zm0 2h1v1h-1zm0 2h1v1h-1z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
-                <div className="mt-auto flex items-end justify-between px-1 mb-0.5">
-                  <div className="w-[100px] h-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-white/5 rounded-md flex items-center justify-center shadow-inner relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-950 absolute left-1 top-1" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-950 absolute right-1 top-1" />
-                  </div>
-
-                  <div className="w-[110px] h-3 bg-gradient-to-r from-indigo-500 via-purple-500 via-pink-500 via-cyan-500 to-blue-500 rounded border border-white/10 opacity-75 relative overflow-hidden shadow-[0_0_10px_rgba(168,85,247,0.15)] mb-1">
-                    <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,rgba(255,255,255,0.08)_2px,rgba(255,255,255,0.08)_4px)]" />
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      <section id="about" className="py-28 relative z-10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="glass-card rounded-3xl p-8 lg:p-16 flex flex-col lg:flex-row gap-16 items-center">
-
-            <div className="relative group flex-shrink-0">
-              <div className="absolute inset-0 border border-primary/15 rounded-2xl translate-x-2.5 translate-y-2.5 transition-transform" />
-              <div className="relative w-64 h-64 lg:w-72 lg:h-72 rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-white/[0.02]">
-                <img
-                  src="/images/logo.png"
-                  alt="Mohammad Kevin"
-                  onError={(e) => {
-                    e.currentTarget.src = "/images/foto.png";
-                  }}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103"
-                />
-              </div>
-            </div>
-
-
-            <div className="flex flex-col gap-6">
-              <div>
-                <p className="text-primary text-xs font-bold uppercase tracking-widest mb-2">
-                  Tentang Saya
-                </p>
-                <h2 className="text-4xl font-extrabold text-white leading-tight">
-                  Merancang Backend Skalabel & <br />
-                  <span className="text-primary">Berkinerja Tinggi</span>
-                </h2>
-              </div>
-              <p className="text-gray-400 leading-relaxed text-base">
-                Saya adalah seorang Fullstack Developer dengan minat mendalam pada arsitektur API dan efisiensi database. Selama 2 tahun terakhir, saya telah mengembangkan berbagai sistem transaksi keuangan, aplikasi kasir (Point of Sale), serta arsip digital untuk organisasi. Saya senang memecahkan tantangan integrasi, mengoptimalkan query SQL, dan menerjemahkan logika backend yang rumit ke dalam visual dashboard frontend yang responsif dan mudah digunakan.
+              <p className="text-slate-400 text-sm sm:text-base font-sans leading-relaxed max-w-xl">
+                Saya merancang arsitektur API yang aman, handal, dan berkinerja tinggi. Berspesialisasi dalam{" "}
+                <span className="text-white font-mono font-semibold">Next.js, NestJS, Express, Prisma, PostgreSQL</span>, dan{" "}
+                <span className="text-white font-mono font-semibold">MySQL</span> untuk sistem transaksi Kasir (POS) & Arsip Digital.
               </p>
 
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <a
+                  href="#contact"
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 transition-all focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  <Rocket className="w-4 h-4" />
+                  <span>$ ./contact.sh</span>
+                </a>
 
-              <div className="flex flex-wrap items-center gap-4 mt-2">
                 <a
-                  href="#portfolio"
-                  className="px-6 py-3 bg-primary hover:opacity-90 text-gray-955 text-sm font-bold rounded-full transition-all duration-300"
+                  href="#projects"
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-semibold text-xs rounded transition-all focus-visible:ring-2 focus-visible:ring-amber-400"
                 >
-                  Lihat Karya Saya
+                  <Terminal className="w-4 h-4 text-amber-400" />
+                  <span>$ ./fetch_projects.sh</span>
                 </a>
-                <a
-                  href="/CV%20Mohammad%20Kevin.pdf"
-                  download
-                  className="flex items-center gap-2 px-6 py-3 border border-white/10 hover:border-primary hover:text-primary text-white text-sm font-semibold rounded-full transition-all duration-300"
-                >
-                  <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  Unduh CV
-                </a>
+              </div>
+
+              {/* Key Metrics Bar */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-6 border-t border-slate-800/80">
+                {whoamiData.stats.map((st) => (
+                  <div key={st.label} className="flex flex-col gap-0.5 p-2 rounded bg-slate-900/50 border border-slate-800/60">
+                    <span className="text-lg font-black text-amber-400">{st.value}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">{st.label}</span>
+                  </div>
+                ))}
+              </div>
+
+            </div>
+
+            {/* Right Col: Signature Visual Element (Neofetch / System Diagnostics Panel) */}
+            <div className="lg:col-span-6">
+              <div className="rounded-xl border border-slate-700/80 bg-[#0d1117] shadow-2xl overflow-hidden font-mono text-xs">
+                
+                {/* IDE Window Header */}
+                <div className="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
+                  </div>
+                  <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                    <Terminal className="w-3.5 h-3.5 text-amber-400" />
+                    <span>neofetch --system-diagnostics</span>
+                  </div>
+                  <div className="text-[10px] text-slate-400 uppercase tracking-widest">
+                    v2.4-stable
+                  </div>
+                </div>
+
+                {/* Neofetch Content Body */}
+                <div className="p-5 grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
+                  
+                  {/* ASCII Logo / Portrait Box */}
+                  <div className="sm:col-span-5 flex flex-col items-center justify-center p-4 bg-slate-950/80 border border-slate-800 rounded-lg">
+                    <pre className="text-[9px] leading-none font-bold text-amber-400 select-none">
+{`  __  __ _  __
+ |  \\/  | |/ /
+ | |\\/| | ' / 
+ | |  | | . \\ 
+ |_|  |_|_|\\_\\`}
+                    </pre>
+                    <div className="mt-3 text-center">
+                      <span className="text-white font-bold text-xs block">KEVIN.SYS</span>
+                      <span className="text-[10px] text-emerald-400 font-mono block mt-0.5">● ONLINE [ID: 9457]</span>
+                    </div>
+                  </div>
+
+                  {/* Neofetch Key-Value Diagnostics */}
+                  <div className="sm:col-span-7 flex flex-col gap-2 text-[11px]">
+                    <div className="flex items-center gap-2 pb-1 border-b border-slate-800">
+                      <span className="text-amber-400 font-bold">OS:</span>
+                      <span className="text-slate-200">DevKernel / Linux x86_64</span>
+                    </div>
+                    <div className="flex items-center gap-2 pb-1 border-b border-slate-800">
+                      <span className="text-amber-400 font-bold">HOST:</span>
+                      <span className="text-slate-200">SMK Telkom Malang (ID)</span>
+                    </div>
+                    <div className="flex items-center gap-2 pb-1 border-b border-slate-800">
+                      <span className="text-amber-400 font-bold">ROLE:</span>
+                      <span className="text-slate-200">Backend & Fullstack Dev</span>
+                    </div>
+                    <div className="flex items-center gap-2 pb-1 border-b border-slate-800">
+                      <span className="text-amber-400 font-bold">UPTIME:</span>
+                      <span className="text-slate-200">2+ Years Active Coding</span>
+                    </div>
+                    <div className="flex items-center gap-2 pb-1 border-b border-slate-800">
+                      <span className="text-amber-400 font-bold">CORE:</span>
+                      <span className="text-slate-200">Next, Nest, Express, Prisma</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-amber-400 font-bold">DB ENGINE:</span>
+                      <span className="text-slate-200">PostgreSQL & MySQL</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Interactive CLI Prompt Line */}
+                <div className="px-5 py-3 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-400">$</span>
+                    <span className="text-slate-300">echo $STATUS</span>
+                    <span className="text-slate-400">=&gt;</span>
+                    <span className="text-emerald-400 font-bold">Ready for Freelance & Systems Collaboration</span>
+                    <span className="inline-block w-2 h-4 bg-amber-400 animate-blink" />
+                  </div>
+                </div>
+
               </div>
             </div>
+
           </div>
         </div>
       </section>
 
 
-      <section id="services" className="py-28 relative z-10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <p className="text-primary text-xs font-bold uppercase tracking-widest mb-2">
-              Layanan Saya
-            </p>
-            <h2 className="text-4xl font-extrabold text-white">Apa Yang Saya Tawarkan</h2>
-            <p className="text-gray-400 mt-4 text-sm leading-relaxed">
-              Membantu bisnis dan produk digital Anda berkembang melalui implementasi solusi arsitektur web modern.
-            </p>
+      {/* ================= ABOUT / WHOAMI SECTION ================= */}
+      <section id="whoami" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="flex flex-col gap-2 mb-10">
+            <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest">
+              <UserCheck className="w-4 h-4" />
+              <span>$ cat whoami.md</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
+              Tentang Saya & Filosofi Kode
+            </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {services.map((service, index) => (
-              <div
-                key={index}
-                className="glass-card p-8 rounded-3xl border border-white/5 flex flex-col gap-5 hover:border-primary/20 transition-all duration-300"
-              >
-                <div className="p-3 bg-primary/10 border border-primary/20 text-primary rounded-2xl w-fit">
-                  {service.icon}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            
+            {/* Main Narrative Terminal Window */}
+            <div className="lg:col-span-8 rounded-xl border border-slate-800 bg-[#0d1117] p-6 sm:p-8 flex flex-col justify-between">
+              <div className="flex flex-col gap-4 font-sans text-slate-300 leading-relaxed text-sm sm:text-base">
+                <p>
+                  Halo! Saya <strong className="text-white font-mono">Mohammad Kevin</strong>, seorang Fullstack & Backend Developer yang menempuh pendidikan di <strong className="text-white font-mono">SMK Telkom Malang</strong>, berdomisili di Malang, Indonesia.
+                </p>
+                <p>
+                  Fokus utama saya adalah membangun arsitektur API yang terstruktur dan scalable, mengoptimalkan query database relasional, serta menerjemahkan logika bisnis rumit menjadi antarmuka dashboard admin yang bersih dan responsif.
+                </p>
+                <p>
+                  Selama 2 tahun terakhir, saya telah mengembangkan berbagai sistem transaksi keuangan seperti <strong className="text-amber-400 font-mono">Aplikasi Kasir (Point of Sale)</strong>, <strong className="text-amber-400 font-mono">Arsip Digital Dokumen</strong>, serta engine persediaan barang. Saya lebih menyukai solusi pragmatis dengan arsitektur modular daripada kode berlebihan.
+                </p>
+              </div>
+
+              {/* Core Philosophy Code Snippet */}
+              <div className="mt-6 p-4 rounded bg-slate-950 border border-slate-800 font-mono text-xs text-slate-400">
+                <div className="text-slate-500 mb-1">// philosophy.ts</div>
+                <div className="text-amber-400">const devPhilosophy = &#123;</div>
+                <div className="pl-4 text-slate-300">architecture: <span className="text-emerald-400">"Modular & Clean Code"</span>,</div>
+                <div className="pl-4 text-slate-300">database: <span className="text-cyan-400">"Indexed & Query-Tuned"</span>,</div>
+                <div className="pl-4 text-slate-300">stack: [<span className="text-amber-300">"Next.js"</span>, <span className="text-amber-300">"NestJS"</span>, <span className="text-amber-300">"Prisma"</span>, <span className="text-amber-300">"PostgreSQL"</span>]</div>
+                <div className="text-amber-400">&#125;;</div>
+              </div>
+            </div>
+
+            {/* Quick Specs Sidebar */}
+            <div className="lg:col-span-4 rounded-xl border border-slate-800 bg-[#0d1117] p-6 flex flex-col justify-between font-mono text-xs gap-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-800 text-amber-400 font-bold uppercase tracking-wider">
+                <Server className="w-4 h-4" />
+                <span>SYSTEM ENVIRONMENT</span>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">BASE LOCATION:</span>
+                  <span className="text-white font-bold">Malang, Jawa Timur, Indonesia</span>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">{service.desc}</p>
+                  <span className="text-slate-400 block text-[10px]">INSTITUTION:</span>
+                  <span className="text-white font-bold">SMK Telkom Malang (RPL)</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">PRIMARY STACK:</span>
+                  <span className="text-amber-400 font-bold">Next.js, NestJS, Express, Prisma</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">DATABASE ENGINE:</span>
+                  <span className="text-cyan-400 font-bold">PostgreSQL & MySQL</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">SECONDARY STACK:</span>
+                  <span className="text-slate-400">Laravel / PHP (Historical Monolith)</span>
                 </div>
               </div>
-            ))}
+
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px]">
+                <span className="text-emerald-400 font-bold">● FREELANCE AVAILABILITY</span>
+                <span className="text-slate-400">OPEN</span>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
 
-      <section id="process" className="py-28 relative z-10 bg-white/[0.01]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <p className="text-primary text-xs font-bold uppercase tracking-widest mb-2">
-              Keahlian
-            </p>
-            <h2 className="text-4xl font-extrabold text-white">Teknologi & Kemampuan</h2>
-            <p className="text-gray-400 mt-4 text-sm leading-relaxed">
-              Keahlian teknis yang saya kuasai dan aplikasikan langsung dalam pengembangan proyek skala riil.
+      {/* ================= TECH STACK / SKILLS SECTION ================= */}
+      <section id="stack" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="flex flex-col gap-2 mb-10">
+            <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest">
+              <Settings className="w-4 h-4" />
+              <span>$ cat .config/stack.json</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
+              Tech Stack & Pencapaian Konkret
+            </h2>
+            <p className="text-slate-400 text-xs sm:text-sm font-sans max-w-2xl">
+              Fokus utama pada ekosistem TypeScript & Database relasional. Persentase indikatif diganti dengan fakta pencapaian nyata per kategori.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-
-            <div className="lg:col-span-4 flex flex-col gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Nav: Skill Category Tabs */}
+            <div className="lg:col-span-4 flex flex-col gap-2">
               {skillCategories.map((cat) => {
-                const Icon = cat.icon;
+                const isActive = activeTab === cat.id;
                 return (
                   <button
                     key={cat.id}
                     onClick={() => setActiveTab(cat.id)}
-                    className={`w-full text-left p-5 rounded-2xl border transition-all duration-300 flex items-center gap-4 ${
-                      activeTab === cat.id
-                        ? "bg-white/5 border-primary text-primary shadow-lg shadow-primary/5"
-                        : "bg-[#082a2e]/20 border-white/5 text-gray-400 hover:border-white/10 hover:text-white"
+                    className={`w-full text-left p-4 rounded-lg border transition-all duration-200 flex items-center justify-between cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-400 ${
+                      isActive
+                        ? "bg-amber-400/10 border-amber-500/40 text-amber-400 shadow-lg"
+                        : "bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
                     }`}
                   >
-                    <span className="p-2 bg-white/5 rounded-xl">
-                      <Icon className="w-6 h-6 text-primary" strokeWidth={1.75} />
-                    </span>
-                    <div>
-                      <h3 className="font-bold text-sm text-white">{cat.name}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">{cat.skills.length} keahlian utama</p>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] text-slate-500 uppercase">{cat.cmd}</span>
+                      <h3 className="font-bold text-sm text-white font-sans">{cat.title}</h3>
                     </div>
+                    <span className="text-xs font-mono font-bold text-amber-400">
+                      {isActive ? "&gt;" : ""}
+                    </span>
                   </button>
                 );
               })}
             </div>
 
-
-            <div className="lg:col-span-8 bg-slate-950/20 border border-white/5 rounded-3xl p-8 lg:p-10 shadow-xl">
-              <div className="flex flex-col gap-8">
+            {/* Right Panel: Selected Skill Group Details */}
+            <div className="lg:col-span-8 rounded-xl border border-slate-800 bg-[#0d1117] p-6 sm:p-8 flex flex-col gap-6">
+              
+              {/* Category Header */}
+              <div className="pb-4 border-b border-slate-800 flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    Metrik Kemampuan {skillCategories.find((c) => c.id === activeTab)?.name}
+                  <h3 className="text-lg font-extrabold text-white font-sans">
+                    {skillCategories.find((c) => c.id === activeTab)?.title}
                   </h3>
-                  <p className="text-xs text-gray-500">
-                    Prosentase di bawah mewakili intensitas penggunaan dalam deployment proyek produksi.
-                  </p>
+                  <span className="text-xs text-slate-400 font-mono">
+                    {skillCategories.find((c) => c.id === activeTab)?.cmd}
+                  </span>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+              {/* Skills Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {skillCategories
+                  .find((c) => c.id === activeTab)
+                  ?.skills.map((skill) => (
+                    <div
+                      key={skill.name}
+                      className="p-3.5 rounded bg-slate-950 border border-slate-800 flex flex-col gap-1.5 hover:border-slate-700 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white font-sans">{skill.name}</span>
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                          skill.levelTag === "CORE STACK"
+                            ? "bg-amber-400/10 border-amber-500/30 text-amber-400"
+                            : skill.levelTag === "PRIMARY"
+                            ? "bg-cyan-400/10 border-cyan-500/30 text-cyan-400"
+                            : "bg-slate-800 border-slate-700 text-slate-400"
+                        }`}>
+                          {skill.levelTag}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-snug font-sans">
+                        {skill.desc}
+                      </p>
+                    </div>
+                  ))}
+              </div>
+
+              {/* Concrete Achievements Box */}
+              <div className="p-4 rounded-lg bg-slate-950 border border-slate-800 flex flex-col gap-3 mt-2">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>Pencapaian & Hasil Implementasi Konkret</span>
+                </div>
+                <ul className="flex flex-col gap-2 font-sans text-xs text-slate-300">
                   {skillCategories
                     .find((c) => c.id === activeTab)
-                    ?.skills.map((skill) => {
-                      const radius = 35;
-                      const circumference = 2 * Math.PI * radius;
-                      const strokeDashoffset = circumference - (skill.level / 100) * circumference;
-
-                      return (
-                        <div
-                          key={skill.name}
-                          className="flex flex-col items-center justify-center p-5 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-primary/20 hover:bg-white/[0.04] transition-all duration-300 group"
-                        >
-                          <div className="relative w-20 h-20 flex items-center justify-center">
-                            <div className="absolute inset-0 rounded-full bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            <svg className="w-20 h-20 transform -rotate-90">
-                              <circle
-                                cx="40"
-                                cy="40"
-                                r={radius}
-                                className="stroke-current text-white/5"
-                                strokeWidth="5"
-                                fill="transparent"
-                              />
-                              <circle
-                                cx="40"
-                                cy="40"
-                                r={radius}
-                                className="stroke-current text-primary transition-all duration-1000 ease-out"
-                                strokeWidth="5"
-                                fill="transparent"
-                                strokeDasharray={circumference}
-                                strokeDashoffset={strokeDashoffset}
-                              />
-                            </svg>
-                            <span className="absolute text-sm font-extrabold text-white">{skill.level}%</span>
-                          </div>
-                          <span className="text-[11px] font-semibold text-gray-300 mt-4 text-center group-hover:text-primary transition-colors duration-300">
-                            {skill.name}
-                          </span>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      <section id="experience" className="py-28 relative z-10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <p className="text-primary text-xs font-bold uppercase tracking-widest mb-2">
-              Perjalanan Karir
-            </p>
-            <h2 className="text-4xl font-extrabold text-white">Garis Waktu Pengalaman</h2>
-            <p className="text-gray-400 mt-4 text-sm leading-relaxed">
-              Ringkasan jejak profesional dan studi kasus kontribusi teknis saya selama ini.
-            </p>
-          </div>
-
-          <div className="relative border-l border-white/10 max-w-4xl mx-auto pl-6 sm:pl-10 flex flex-col gap-12">
-            {timelineItems.map((item, index) => (
-              <div key={index} className="relative group">
-
-                <div className="absolute -left-[31px] sm:-left-[47px] top-1.5 w-4 h-4 rounded-full bg-background border border-primary flex items-center justify-center transition-all duration-300 group-hover:scale-125">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping absolute" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                </div>
-
-
-                <div className="glass-card p-6 sm:p-8 rounded-2xl border border-white/5 hover:border-primary/20 flex flex-col gap-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <span className="text-xs font-bold text-primary px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-                        {item.period}
-                      </span>
-                      <h3 className="text-xl font-bold text-white mt-3">{item.role}</h3>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-400">{item.company}</span>
-                  </div>
-
-                  <p className="text-gray-400 text-sm leading-relaxed mt-2">{item.desc}</p>
-
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {item.tech.map((t) => (
-                      <span key={t} className="text-xs bg-white/5 border border-white/10 px-2 py-0.5 rounded-md text-gray-300">
-                        {t}
-                      </span>
+                    ?.achievements.map((ach, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
+                        <span className="text-amber-400 font-mono font-bold mt-0.5">&gt;</span>
+                        <span>{ach}</span>
+                      </li>
                     ))}
-                  </div>
-                </div>
+                </ul>
               </div>
-            ))}
+
+            </div>
+
           </div>
         </div>
       </section>
 
 
-      <section id="portfolio" className="py-28 relative z-10 bg-white/[0.01]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <p className="text-primary text-xs font-bold uppercase tracking-widest mb-2">
-              Karya Saya
-            </p>
-            <h2 className="text-4xl font-extrabold text-white">Proyek Terbaru</h2>
-            <p className="text-gray-400 mt-4 text-sm leading-relaxed">
-              Koleksi sistem kustom yang saya rancang dan selesaikan untuk memecahkan masalah klien.
-            </p>
-          </div>
+      {/* ================= FEATURED PROJECTS SECTION ================= */}
+      <section id="projects" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+            <div>
+              <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest mb-1">
+                <Code2 className="w-4 h-4" />
+                <span>$ ./fetch_projects.sh --status=deployed</span>
+              </div>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
+                Portofolio Proyek Terstruktur
+              </h2>
+            </div>
 
-
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-12 max-w-5xl mx-auto">
-
-            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            {/* Filter Buttons & Search */}
+            <div className="flex flex-wrap items-center gap-2">
               {["All", "Backend", "Frontend", "Fullstack"].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded text-xs font-mono transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-400 ${
                     activeCategory === cat
-                      ? "bg-primary text-gray-950 shadow-md shadow-primary/20 scale-102"
-                      : "bg-white/5 border border-white/5 text-gray-400 hover:border-white/10 hover:text-white"
+                      ? "bg-amber-400 text-slate-950 font-bold shadow-md"
+                      : "bg-slate-900 border border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
                   }`}
                 >
-                  {cat}
+                  --{cat.toLowerCase()}
                 </button>
               ))}
             </div>
-
-
-            <div className="relative w-full md:w-80">
-              <input
-                type="text"
-                placeholder="Cari nama proyek atau teknologi..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-5 py-3 pl-11 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-xs text-white bg-white/5 transition-all"
-              />
-              <svg className="w-4 h-4 text-gray-500 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
           </div>
 
+          {/* Search Bar */}
+          <div className="relative mb-8 max-w-md">
+            <input
+              type="text"
+              placeholder="Filter nama proyek, stack, atau masalah..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2.5 pl-10 rounded bg-slate-900 border border-slate-800 focus:outline-none focus:border-amber-400 text-xs text-white placeholder-slate-500 font-mono"
+            />
+            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          </div>
 
+          {/* Projects Grid */}
           {filteredProjects.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProjects.map((item, i) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+              {filteredProjects.map((item) => (
                 <div
-                  key={i}
-                  className="portfolio-card-hover group bg-slate-900/40 border border-white/5 rounded-3xl shadow-lg hover:border-primary/30 transition-all duration-300 flex flex-col h-96"
+                  key={item.id}
+                  className="rounded-xl border border-slate-800 bg-[#0d1117] hover:border-amber-500/40 transition-all duration-300 flex flex-col justify-between p-6 shadow-xl"
                 >
-
-                  <div className={`h-full bg-gradient-to-br ${item.color} p-8 flex flex-col justify-between overflow-hidden relative z-0`}>
-                    <div className="absolute inset-0 bg-background/45 backdrop-blur-[1px]" />
-
-                    <span className="relative z-10 text-xs font-bold text-white/90 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full w-fit border border-white/10 uppercase tracking-wider">
-                      {item.category}
-                    </span>
-
-                    <div className="relative z-10 flex flex-col gap-2">
-                      <h3 className="text-2xl font-extrabold text-white leading-tight">{item.title}</h3>
-                      <span className="text-[11px] text-primary font-semibold flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
-                        Hover untuk detail info
-                        <svg className="w-3.5 h-3.5 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                        </svg>
+                  <div className="flex flex-col gap-4">
+                    
+                    {/* Card Header Tag */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">
+                        {item.category}
+                      </span>
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">
+                        {item.type}
                       </span>
                     </div>
-                  </div>
 
+                    <h3 className="text-lg font-bold text-white font-sans">{item.title}</h3>
+                    <p className="text-xs text-slate-400 font-sans leading-relaxed">
+                      {item.desc}
+                    </p>
 
-                  <div className="portfolio-drawer-hover p-6 flex flex-col justify-between h-full">
-                    <div className="flex flex-col gap-4">
-                      <div>
-                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{item.category}</span>
-                        <h4 className="text-lg font-bold text-white mt-1">{item.title}</h4>
-                      </div>
-
-                      <p className="text-xs text-gray-400 leading-relaxed">
-                        {item.desc}
+                    {/* Problem Solved */}
+                    <div className="p-3 rounded bg-slate-950 border border-slate-800/80 flex flex-col gap-1 text-xs">
+                      <span className="text-[10px] text-rose-400 font-bold uppercase">$ problem.log:</span>
+                      <p className="text-slate-300 font-sans text-[11px] leading-snug">
+                        {item.problem}
                       </p>
-
-
-                      <div className="flex flex-wrap gap-1.5">
-                        {item.tech.map((t) => (
-                          <span
-                            key={t}
-                            className="text-[10px] text-gray-300 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md"
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
                     </div>
 
+                    {/* Impact / Results */}
+                    <div className="p-3 rounded bg-slate-950 border border-slate-800/80 flex flex-col gap-1 text-xs">
+                      <span className="text-[10px] text-emerald-400 font-bold uppercase">$ impact.metric:</span>
+                      <p className="text-slate-300 font-sans text-[11px] leading-snug">
+                        {item.impact}
+                      </p>
+                    </div>
+
+                    {/* Tech Badges */}
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {item.tech.map((t) => (
+                        <span
+                          key={t}
+                          className="text-[10px] text-slate-300 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded font-mono"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+
+                  </div>
+
+                  {/* Card Actions (Live Demo & Source Code - Hides if empty!) */}
+                  <div className="flex items-center justify-between gap-2 mt-6 pt-4 border-t border-slate-800">
+                    <div className="flex items-center gap-2">
+                      {item.demoUrl && item.demoUrl.length > 0 && (
+                        <a
+                          href={item.demoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-bold transition-all shadow-sm focus-visible:ring-2 focus-visible:ring-white"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Live Demo
+                        </a>
+                      )}
+                      {item.repoUrl && item.repoUrl.length > 0 && (
+                        <a
+                          href={item.repoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 text-[11px] font-semibold border border-slate-700 transition-all focus-visible:ring-2 focus-visible:ring-amber-400"
+                        >
+                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                            <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                          </svg>
+                          Source Code
+                        </a>
+                      )}
+                    </div>
 
                     <a
                       href="#contact"
-                      className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:text-secondary transition-colors mt-4 w-fit"
+                      className="text-[11px] font-bold text-amber-400 hover:underline"
                     >
-                      Hubungi Detail
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                      </svg>
+                      $ detail --info
                     </a>
                   </div>
+
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-20 bg-white/[0.02] rounded-3xl border border-white/5 max-w-lg mx-auto">
-              <SearchX className="w-10 h-10 text-gray-500 mx-auto" strokeWidth={1.5} />
-              <h3 className="text-lg font-bold text-white mt-4">Proyek Tidak Ditemukan</h3>
-              <p className="text-gray-400 text-sm mt-2 px-6">
-                Tidak ada proyek yang cocok dengan kata kunci "{searchQuery}" di kategori ini. Coba kata kunci atau kategori lain.
-              </p>
+            <div className="text-center py-16 bg-[#0d1117] rounded-xl border border-slate-800">
+              <Search className="w-8 h-8 text-slate-500 mx-auto mb-2" />
+              <p className="text-sm text-slate-400 font-sans">Tidak ada proyek yang sesuai dengan kriteria pencarian.</p>
             </div>
           )}
+
         </div>
       </section>
 
 
-      <section
-        id="contact"
-        className="py-28 relative z-10"
-      >
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <p className="text-primary text-xs font-bold uppercase tracking-widest mb-2">
-              Kolaborasi
-            </p>
-            <h2 className="text-4xl font-extrabold text-white">Mari Diskusikan Proyek Anda</h2>
+      {/* ================= TIMELINE / EXPERIENCE SECTION ================= */}
+      <section id="timeline" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="flex flex-col gap-2 mb-12">
+            <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest">
+              <Layers className="w-4 h-4" />
+              <span>$ git log --graph --oneline --timeline</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
+              Timeline Pengalaman & Reamur Karir
+            </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          <div className="flex flex-col gap-6 relative">
+            
+            {/* Timeline Line */}
+            <div className="absolute left-4 sm:left-6 top-4 bottom-4 w-0.5 bg-slate-800 z-0" />
 
-            <div className="lg:col-span-5 flex flex-col gap-8">
-              <p className="text-gray-400 leading-relaxed text-sm">
-                Saya aktif mencari peran backend developer kustom, perancangan API aman, atau fullstack engineer. Jika Anda memiliki kebutuhan proyek atau ingin berpartner, silakan isi formulir di sebelah kanan. Saya akan menghubungi Anda kembali dalam kurun waktu 24 jam.
-              </p>
+            {timelineLogs.map((log) => (
+              <div
+                key={log.commitHash}
+                className="relative z-10 pl-10 sm:pl-14 flex flex-col gap-2 group"
+              >
+                {/* Node Commit Icon */}
+                <div className="absolute left-2.5 sm:left-4.5 top-1.5 w-3.5 h-3.5 rounded-full bg-slate-900 border-2 border-amber-400 group-hover:scale-125 transition-transform" />
 
-              <div className="flex flex-col gap-4">
+                <div className="rounded-xl border border-slate-800 bg-[#0d1117] p-5 sm:p-6 flex flex-col gap-3 shadow-lg">
+                  
+                  {/* Log Header */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-amber-400 font-bold text-xs">{log.commitHash}</span>
+                      <span className="text-slate-600">|</span>
+                      <span className="text-xs text-slate-300 font-bold font-sans">{log.title}</span>
+                    </div>
 
-                <div className="flex items-center gap-4 p-4.5 bg-white/[0.02] hover:bg-white/[0.04] rounded-2xl border border-white/5 shadow-sm transition-colors duration-300">
-                  <span className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-primary" strokeWidth={1.75} />
-                  </span>
-                  <div>
-                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Lokasi</p>
-                    <p className="text-sm font-semibold text-white mt-0.5">Malang, Jawa Timur, Indonesia</p>
-                  </div>
-                </div>
-
-
-                <button
-                  onClick={copyEmailToClipboard}
-                  className="w-full text-left flex items-center justify-between p-4.5 bg-white/[0.02] hover:bg-white/[0.04] rounded-2xl border border-white/5 shadow-sm transition-all duration-300 group cursor-pointer"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
-                      <Mail className="w-5 h-5 text-primary" strokeWidth={1.75} />
-                    </span>
-                    <div>
-                      <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Email (Klik untuk Salin)</p>
-                      <p className="text-sm font-semibold text-white mt-0.5">kvn4.200581@gmail.com</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-400 font-mono">{log.period}</span>
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
+                        log.tag === "PRODUCTION"
+                          ? "bg-emerald-400/10 border-emerald-500/30 text-emerald-400"
+                          : "bg-blue-400/10 border-blue-500/30 text-blue-400"
+                      }`}>
+                        {log.tag}
+                      </span>
                     </div>
                   </div>
-                  <Copy className="w-5 h-5 text-gray-500 group-hover:text-primary transition-colors" strokeWidth={1.75} />
-                </button>
+
+                  {/* Summary & Achievements */}
+                  <p className="text-xs text-slate-300 font-sans leading-relaxed">
+                    {log.summary}
+                  </p>
+
+                  <ul className="flex flex-col gap-1.5 font-sans text-xs text-slate-400 mt-1">
+                    {log.achievements.map((ach, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-amber-400 font-mono font-bold text-[10px] mt-0.5">&gt;</span>
+                        <span>{ach}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Stack Badges */}
+                  <div className="flex flex-wrap gap-1.5 pt-2">
+                    {log.techStack.map((tech) => (
+                      <span key={tech} className="text-[10px] text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+
+                </div>
+              </div>
+            ))}
+
+          </div>
+        </div>
+      </section>
 
 
+      {/* ================= CONTACT SECTION ================= */}
+      <section id="contact" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left: Contact Info */}
+            <div className="lg:col-span-5 flex flex-col gap-6">
+              <div>
+                <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest mb-1">
+                  <MessageSquare className="w-4 h-4" />
+                  <span>$ ./contact.sh</span>
+                </div>
+                <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
+                  Hubungi Saya
+                </h2>
+                <p className="text-slate-400 text-xs sm:text-sm font-sans mt-2 leading-relaxed">
+                  Tertarik untuk bekerja sama membangun sistem POS, pengarsipan digital, atau integrasi API backend? Kirim pesan langsung via terminal ini atau melalui kontak sosial berikut.
+                </p>
+              </div>
+
+              {/* Direct Channels */}
+              <div className="flex flex-col gap-3 font-mono text-xs">
+                
+                {/* Email */}
+                <div className="p-3.5 rounded bg-[#0d1117] border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-4 h-4 text-amber-400" />
+                    <div>
+                      <span className="text-[10px] text-slate-500 block">EMAIL:</span>
+                      <a href="mailto:kvn4.200581@gmail.com" className="text-white hover:text-amber-400 font-bold">
+                        kvn4.200581@gmail.com
+                      </a>
+                    </div>
+                  </div>
+                  <button
+                    onClick={copyEmailToClipboard}
+                    className="p-1.5 rounded bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-400 focus-visible:ring-1 focus-visible:ring-amber-400"
+                    title="Salin Email"
+                  >
+                    {copiedEmail ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                {/* WhatsApp */}
                 <a
-                  href="https://wa.me/6282131588846?text=Halo%20Mohammad%20Kevin,%20saya%20tertarik%20untuk%20berkolaborasi%20mengenai%20proyek%20saya."
+                  href="https://wa.me/6282131588846"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-4.5 bg-white/[0.02] hover:bg-white/[0.04] rounded-2xl border border-white/5 shadow-sm transition-all duration-300 group cursor-pointer"
+                  className="p-3.5 rounded bg-[#0d1117] border border-slate-800 hover:border-emerald-500/40 flex items-center justify-between transition-colors"
                 >
-                  <div className="flex items-center gap-4">
-                    <span className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
-                      <Phone className="w-5 h-5 text-primary" strokeWidth={1.75} />
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-4 h-4 text-emerald-400" />
                     <div>
-                      <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Hubungi WhatsApp (Chat Langsung)</p>
-                      <p className="text-sm font-semibold text-white mt-0.5">+62 821-3158-8846</p>
+                      <span className="text-[10px] text-slate-500 block">WHATSAPP:</span>
+                      <span className="text-white font-bold">+62 821-3158-8846</span>
                     </div>
                   </div>
-                  <svg className="w-5 h-5 text-gray-500 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
+                  <span className="text-emerald-400 font-bold text-xs">&gt; Send WA</span>
                 </a>
+
+                {/* LinkedIn */}
+                <a
+                  href="https://linkedin.com/in/mohammad-kevin-arif-rudianto-945733347"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3.5 rounded bg-[#0d1117] border border-slate-800 hover:border-cyan-500/40 flex items-center justify-between transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <UserCheck className="w-4 h-4 text-cyan-400" />
+                    <div>
+                      <span className="text-[10px] text-slate-500 block">LINKEDIN:</span>
+                      <span className="text-white font-bold">mohammad-kevin-arif-rudianto</span>
+                    </div>
+                  </div>
+                  <span className="text-cyan-400 font-bold text-xs">&gt; Connect</span>
+                </a>
+
               </div>
             </div>
 
+            {/* Right: Terminal Form */}
+            <div className="lg:col-span-7 rounded-xl border border-slate-800 bg-[#0d1117] p-6 sm:p-8 shadow-2xl">
+              
+              <div className="pb-4 border-b border-slate-800 flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <Terminal className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold text-white">EXECUTE: ./send-message.py</span>
+                </div>
+                <span className="text-[10px] text-slate-500 uppercase">INTERACTIVE STDIN</span>
+              </div>
 
-            <div className="lg:col-span-7 bg-white/[0.02] border border-white/5 rounded-3xl p-8 shadow-xl flex flex-col gap-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-                    Nama Depan <span className="text-primary">*</span>
+              <form onSubmit={handleFormSubmit} className="flex flex-col gap-4 font-mono text-xs">
+                
+                <div>
+                  <label className="text-[11px] text-amber-400 font-bold block mb-1.5">
+                    $ set INPUT_NAME =
                   </label>
                   <input
-                    name="firstName"
                     type="text"
-                    placeholder="Masukkan nama depan"
-                    value={form.firstName}
-                    onChange={handleChange}
-                    className={inputClass}
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Nama Lengkap Anda..."
+                    className="w-full px-4 py-2.5 rounded bg-slate-950 border border-slate-800 focus:outline-none focus:border-amber-400 text-white font-sans text-xs"
+                    required
                   />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Nama Belakang</label>
+
+                <div>
+                  <label className="text-[11px] text-amber-400 font-bold block mb-1.5">
+                    $ set INPUT_EMAIL =
+                  </label>
                   <input
-                    name="lastName"
-                    type="text"
-                    placeholder="Masukkan nama belakang"
-                    value={form.lastName}
-                    onChange={handleChange}
-                    className={inputClass}
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="email@domain.com..."
+                    className="w-full px-4 py-2.5 rounded bg-slate-950 border border-slate-800 focus:outline-none focus:border-amber-400 text-white font-sans text-xs"
+                    required
                   />
                 </div>
-              </div>
 
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-                  Alamat Email <span className="text-primary">*</span>
-                </label>
-                <input
-                  name="email"
-                  type="email"
-                  placeholder="email.anda@contoh.com"
-                  value={form.email}
-                  onChange={handleChange}
-                  className={inputClass}
-                />
-              </div>
+                <div>
+                  <label className="text-[11px] text-amber-400 font-bold block mb-1.5">
+                    $ set INPUT_MESSAGE =
+                  </label>
+                  <textarea
+                    name="message"
+                    rows={4}
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    placeholder="Jelaskan kebutuhan proyek atau pertanyaan Anda..."
+                    className="w-full px-4 py-2.5 rounded bg-slate-950 border border-slate-800 focus:outline-none focus:border-amber-400 text-white font-sans text-xs resize-none"
+                    required
+                  />
+                </div>
 
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-                  Subjek <span className="text-primary">*</span>
-                </label>
-                <input
-                  name="subject"
-                  type="text"
-                  placeholder="Hal apa yang ingin didiskusikan?"
-                  value={form.subject}
-                  onChange={handleChange}
-                  className={inputClass}
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-                  Deskripsi Pesan <span className="text-primary">*</span>
-                </label>
-                <textarea
-                  name="message"
-                  rows={4}
-                  placeholder="Tuliskan ringkasan proyek atau pesan Anda di sini..."
-                  value={form.message}
-                  onChange={handleChange}
-                  className={`${inputClass} resize-none`}
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={loading}
-                className="w-full py-4.5 bg-gradient-to-r from-primary to-secondary disabled:opacity-60 disabled:cursor-not-allowed text-gray-950 font-bold rounded-xl shadow-lg shadow-primary/10 hover:shadow-primary/20 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3 transition-all duration-300 cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <svg
-                      className="animate-spin h-5 w-5 text-gray-950"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v8H4z"
-                      />
-                    </svg>
-                    <span>Mengirim Pesan...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Kirim Pesan</span>
-                    <Send className="w-4 h-4" />
-                  </>
+                {/* Status Alerts */}
+                {formStatus === "error" && (
+                  <div className="p-3 rounded bg-rose-950/40 border border-rose-800/80 text-rose-300 text-xs flex items-center gap-2">
+                    <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>{errorMessage}</span>
+                  </div>
                 )}
-              </button>
+
+                {formStatus === "success" && (
+                  <div className="p-3 rounded bg-emerald-950/40 border border-emerald-800/80 text-emerald-300 text-xs flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>Pesan berhasil terkirim! Saya akan segera merespons email Anda.</span>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={formStatus === "loading"}
+                  className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-amber-500/10 focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50"
+                >
+                  {formStatus === "loading" ? (
+                    <span>[RUNNING SYSTEM SCRIPT...]</span>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>$ ./send-message.py --submit</span>
+                    </>
+                  )}
+                </button>
+
+              </form>
+
             </div>
+
           </div>
+
         </div>
       </section>
+
     </main>
   );
 }

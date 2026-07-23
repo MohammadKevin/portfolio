@@ -33,6 +33,8 @@ interface Project {
   color: string;
   desc: string;
   tech: string[];
+  demoUrl?: string;
+  repoUrl?: string;
 }
 
 interface Visitor {
@@ -79,6 +81,8 @@ export default function AdminDashboard() {
   const [formColor, setFormColor] = useState("from-blue-600 to-cyan-500");
   const [formDesc, setFormDesc] = useState("");
   const [formTech, setFormTech] = useState("");
+  const [formDemoUrl, setFormDemoUrl] = useState("");
+  const [formRepoUrl, setFormRepoUrl] = useState("");
 
   // Search & Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -179,6 +183,8 @@ export default function AdminDashboard() {
     setFormColor("from-blue-600 to-cyan-500");
     setFormDesc("");
     setFormTech("");
+    setFormDemoUrl("");
+    setFormRepoUrl("");
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -196,6 +202,8 @@ export default function AdminDashboard() {
       color: formColor,
       desc: formDesc,
       tech: formTech.split(",").map((t) => t.trim()).filter(Boolean),
+      demoUrl: formDemoUrl.trim(),
+      repoUrl: formRepoUrl.trim(),
     };
 
     const url = "/api/projects";
@@ -231,6 +239,8 @@ export default function AdminDashboard() {
     setFormColor(project.color);
     setFormDesc(project.desc);
     setFormTech(project.tech.join(", "));
+    setFormDemoUrl(project.demoUrl || "");
+    setFormRepoUrl(project.repoUrl || "");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -543,6 +553,34 @@ export default function AdminDashboard() {
                     className="px-4 py-2.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs text-white bg-slate-950/60"
                   />
                   <span className="text-[9px] text-gray-500">Masukkan nama teknologi dipisahkan dengan tanda koma.</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                      Live Demo URL (Opsional)
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://demo-app.com"
+                      value={formDemoUrl}
+                      onChange={(e) => setFormDemoUrl(e.target.value)}
+                      className="px-4 py-2.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs text-white bg-slate-950/60"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                      Source Code URL (Opsional)
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://github.com/user/repo"
+                      value={formRepoUrl}
+                      onChange={(e) => setFormRepoUrl(e.target.value)}
+                      className="px-4 py-2.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs text-white bg-slate-950/60"
+                    />
+                  </div>
                 </div>
 
                 <button
