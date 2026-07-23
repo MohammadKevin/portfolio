@@ -35,11 +35,7 @@ export default function Navbar() {
   useEffect(() => {
     const savedTheme = localStorage.getItem("kevin-portfolio-theme") || "amber";
     setCurrentTheme(savedTheme);
-    if (savedTheme === "amber") {
-      document.documentElement.removeAttribute("data-theme");
-    } else {
-      document.documentElement.setAttribute("data-theme", savedTheme);
-    }
+    document.documentElement.setAttribute("data-theme", savedTheme);
 
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -60,11 +56,7 @@ export default function Navbar() {
   const changeTheme = (themeName: string) => {
     setCurrentTheme(themeName);
     localStorage.setItem("kevin-portfolio-theme", themeName);
-    if (themeName === "amber") {
-      document.documentElement.removeAttribute("data-theme");
-    } else {
-      document.documentElement.setAttribute("data-theme", themeName);
-    }
+    document.documentElement.setAttribute("data-theme", themeName);
   };
 
   return (

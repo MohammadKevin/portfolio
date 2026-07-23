@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-:root {
+:root,
+[data-theme="amber"] {
   --background: #090d16; /* Deep obsidian terminal background */
   --foreground: #e2e8f0;
   --primary: #f59e0b; /* Terminal Amber */

@@ -191,7 +191,7 @@ export default function Home() {
   });
 
   return (
-    <main className="min-h-screen bg-[#090d16] text-slate-300 relative overflow-hidden bg-grid-pattern selection:bg-amber-400/20 selection:text-amber-300">
+    <main className="min-h-screen bg-background text-slate-300 relative overflow-hidden bg-grid-pattern selection:bg-amber-400/20 selection:text-amber-300 transition-colors duration-500">
       
       {/* Ambient background glows */}
       <div className="absolute top-20 left-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-[140px] pointer-events-none" />

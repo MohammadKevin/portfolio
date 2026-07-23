@@ -58,7 +58,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased bg-[#090d16] text-slate-300 min-h-screen font-sans selection:bg-amber-400/20 selection:text-amber-300">
+      <body className="antialiased bg-background text-slate-300 min-h-screen font-sans selection:bg-amber-400/20 selection:text-amber-300 transition-colors duration-500">
         <Navbar />
         {children}
         <Footer />
