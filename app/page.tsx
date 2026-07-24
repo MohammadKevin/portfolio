@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import * as emailjs from "@emailjs/browser";
+import { send as sendEmail } from "@emailjs/browser";
 import {
   Terminal,
   CheckCircle2,
@@ -50,9 +50,9 @@ import { projectsData, Project } from "@/data/projects";
 import { timelineLogs } from "@/data/timeline";
 import { certificatesData } from "@/data/certificates";
 
-const SERVICE_ID = "service_rmat5kp";
-const TEMPLATE_ID = "template_zt9llkk";
-const PUBLIC_KEY = "3qW5e407vXhAIdlX5";
+const SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || "service_rmat5kp";
+const TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "template_zt9llkk";
+const PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || "3qW5e407vXhAIdlX5";
 
 export default function Home() {
   const [projectsList, setProjectsList] = useState<Project[]>(projectsData);
@@ -149,7 +149,7 @@ export default function Home() {
     setErrorMessage("");
 
     try {
-      await emailjs.send(
+      await sendEmail(
         SERVICE_ID,
         TEMPLATE_ID,
         {
@@ -165,7 +165,7 @@ export default function Home() {
     } catch (err: any) {
       console.error("EmailJS Error:", err);
       setFormStatus("error");
-      setErrorMessage("Gagal mengirim pesan via terminal. Silakan coba via WhatsApp/Email langsung.");
+      setErrorMessage("Gagal mengirim pesan via terminal. Silakan gunakan tombol WhatsApp/Email di bawah.");
     }
   };
 
@@ -1142,9 +1142,37 @@ export default function Home() {
 
                 {/* Status Alerts */}
                 {formStatus === "error" && (
-                  <div className="p-3 rounded bg-rose-950/40 border border-rose-800/80 text-rose-300 text-xs flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span>{errorMessage}</span>
+                  <div className="p-3.5 rounded bg-rose-950/40 border border-rose-800/80 text-rose-300 text-xs flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                      <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span>{errorMessage}</span>
+                    </div>
+                    {formData.name && formData.message && (
+                      <div className="flex flex-wrap gap-2 pt-2 border-t border-rose-900/60">
+                        <a
+                          href={`https://wa.me/6282131588846?text=${encodeURIComponent(
+                            `Halo Kevin, saya ${formData.name} (${formData.email}):\n\n${formData.message}`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center gap-1.5 transition-colors"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Kirim Langsung via WA</span>
+                        </a>
+                        <a
+                          href={`mailto:kvn4.200581@gmail.com?subject=${encodeURIComponent(
+                            `Pesan Portofolio dari ${formData.name}`
+                          )}&body=${encodeURIComponent(
+                            `Nama: ${formData.name}\nEmail: ${formData.email}\n\nPesan:\n${formData.message}`
+                          )}`}
+                          className="px-3 py-1.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-[11px] flex items-center gap-1.5 transition-colors"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          <span>Kirim Langsung via Email</span>
+                        </a>
+                      </div>
+                    )}
                   </div>
                 )}
 
