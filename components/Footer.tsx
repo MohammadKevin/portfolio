@@ -1,16 +1,20 @@
 "use client";
 
-import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { Mail, Phone, MapPin, ExternalLink, Heart } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/data/translations";
 
-const footerNav = [
-  { label: "./hero", href: "#hero" },
-  { label: "./whoami", href: "#whoami" },
-  { label: "./stack", href: "#stack" },
-  { label: "./projects", href: "#projects" },
-  { label: "./timeline", href: "#timeline" },
-  { label: "./contact", href: "#contact" },
-];
+const footerNavKeys = [
+  { key: "home",     href: "#hero"         },
+  { key: "about",    href: "#whoami"       },
+  { key: "skills",   href: "#stack"        },
+  { key: "projects", href: "#projects"     },
+  { key: "github",   href: "#github"       },
+  { key: "timeline", href: "#timeline"     },
+  { key: "contact",  href: "#contact"      },
+] as const;
 
 const socials = [
   {
@@ -44,101 +48,110 @@ const socials = [
 
 export default function Footer() {
   const pathname = usePathname();
+  const { lang } = useLanguage();
+  const f = translations.footer;
+  const n = translations.nav;
 
-  if (pathname && pathname.startsWith("/admin")) {
-    return null;
-  }
+  if (pathname && pathname.startsWith("/admin")) return null;
 
   return (
-    <footer className="bg-[#060911] text-slate-400 border-t border-slate-800 font-mono">
-      
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          
-          <div className="md:col-span-6 flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-amber-400 font-bold text-sm">kevin@dev-machine:~$</span>
+    <footer className="bg-[#060911] border-t border-white/6 text-slate-400">
+      <div className="max-w-6xl mx-auto px-6 py-14">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+
+          {/* Brand */}
+          <div className="md:col-span-5 flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div className="photo-ring w-11 h-11 relative">
+                <Image src="/images/logo.png" alt="Kevin" fill sizes="44px" className="object-cover" />
+              </div>
+              <div>
+                <p className="font-bold text-white">Mohammad Kevin</p>
+                <p className="text-xs text-[var(--accent-light)] font-mono">{f.role[lang]}</p>
+              </div>
             </div>
-            
-            <h3 className="text-white font-bold text-base font-sans">
-              Mohammad Kevin — Backend & Fullstack Developer
-            </h3>
-            
-            <p className="text-xs text-slate-400 leading-relaxed max-w-md font-sans">
-              Siswa SMK Telkom Malang yang berfokus membangun REST API scalable, optimasi skema database relasional (PostgreSQL & MySQL), serta antarmuka web modern dengan Next.js, NestJS, Express, Prisma, dan Tailwind CSS.
-            </p>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 mt-1">
-              <span className="flex items-center gap-1.5 text-slate-300">
-                <span className="text-amber-400">LOC:</span> Malang, ID
-              </span>
-              <span className="text-slate-700">|</span>
-              <span className="flex items-center gap-1.5 text-slate-300">
-                <span className="text-amber-400">STACK:</span> TypeScript & SQL
-              </span>
+            <p className="text-sm text-slate-500 leading-relaxed max-w-xs">{f.desc[lang]}</p>
+
+            <div className="flex items-center gap-1.5 text-xs text-slate-600">
+              <MapPin className="w-3.5 h-3.5 text-[var(--accent-light)]" />
+              {f.location[lang]}
+              <span className="mx-2">·</span>
+              <span className="status-dot" style={{ width: "6px", height: "6px" }} />
+              {f.available[lang]}
             </div>
-          </div>
 
-          
-          <div className="md:col-span-3 flex flex-col gap-3">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">SYSTEM LINKS</span>
-            <ul className="flex flex-col gap-1.5 list-none p-0 m-0 text-xs">
-              {footerNav.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-slate-400 hover:text-amber-400 transition-colors focus-visible:ring-1 focus-visible:ring-amber-400 rounded px-1 -ml-1"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          
-          <div className="md:col-span-3 flex flex-col gap-3">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">CONNECT TERMINAL</span>
-            <div className="flex items-center gap-2">
-              {socials.map((s) => (
+            <div className="flex items-center gap-2 mt-1">
+              {socials.map(s => (
                 <a
                   key={s.label}
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="w-9 h-9 rounded bg-slate-900 border border-slate-800 hover:border-amber-400 hover:text-amber-400 text-slate-300 flex items-center justify-center transition-all focus-visible:ring-2 focus-visible:ring-amber-400"
+                  className="w-8 h-8 rounded-lg bg-white/4 border border-white/8 text-slate-500
+                    hover:text-white hover:border-[var(--accent-border)] flex items-center justify-center transition-all"
                 >
                   {s.icon}
                 </a>
               ))}
             </div>
+          </div>
 
-            <div className="flex flex-col gap-1 mt-2 text-xs">
-              <a href="mailto:kvn4.200581@gmail.com" className="text-slate-400 hover:text-amber-400 transition-colors">
+          {/* Nav */}
+          <div className="md:col-span-3 flex flex-col gap-3">
+            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">{f.navLabel[lang]}</p>
+            <ul className="flex flex-col gap-2">
+              {footerNavKeys.map(link => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    className="text-sm text-slate-500 hover:text-[var(--accent-light)] transition-colors"
+                  >
+                    {(n as Record<string, Record<string, string>>)[link.key][lang]}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div className="md:col-span-4 flex flex-col gap-3">
+            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">{f.contactLabel[lang]}</p>
+            <div className="flex flex-col gap-2.5">
+              <a href="mailto:kvn4.200581@gmail.com"
+                className="flex items-center gap-2.5 text-sm text-slate-500 hover:text-[var(--accent-light)] transition-colors">
+                <Mail className="w-4 h-4 text-[var(--accent-light)] shrink-0" />
                 kvn4.200581@gmail.com
               </a>
-              <a href="https://wa.me/6282131588846" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-amber-400 transition-colors">
+              <a href="https://wa.me/6282131588846" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2.5 text-sm text-slate-500 hover:text-emerald-400 transition-colors">
+                <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
                 +62 821-3158-8846
               </a>
+              <a href="https://linkedin.com/in/mohammad-kevin-arif-rudianto-945733347"
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2.5 text-sm text-slate-500 hover:text-sky-400 transition-colors">
+                <ExternalLink className="w-4 h-4 text-sky-400 shrink-0" />
+                LinkedIn Profile
+              </a>
             </div>
+            <a href="#contact" className="btn-accent text-sm px-4 py-2 rounded-lg w-fit mt-2">
+              {f.hireBtn[lang]}
+            </a>
           </div>
 
         </div>
       </div>
 
-      
-      <div className="border-t border-slate-800/80 bg-[#04060c] py-3 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-2">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span>SYS_STATUS: 200 OK</span>
-            <span className="text-slate-700">|</span>
-            <span>BUILD: Next.js 16 (Turbopack)</span>
-          </div>
-          <div>
-            © {new Date().getFullYear()} Mohammad Kevin. All rights reserved.
+      {/* Bottom bar */}
+      <div className="border-t border-white/5 py-4 px-6">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-700">
+          <span>{f.builtWith[lang]}</span>
+          <div className="flex items-center gap-1">
+            © {new Date().getFullYear()} Mohammad Kevin · Made with
+            <Heart className="w-3 h-3 text-rose-500 mx-1" />
+            {f.madeIn[lang]}
           </div>
         </div>
       </div>

@@ -1,42 +1,29 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { send as sendEmail } from "@emailjs/browser";
 import {
-  Terminal,
-  CheckCircle2,
-  Code2,
-  Database,
-  ExternalLink,
-  Layers,
-  Mail,
-  MapPin,
-  MessageSquare,
-  Phone,
-  Rocket,
-  Search,
-  Settings,
-  Server,
-  UserCheck,
-  Wrench,
-  AlertTriangle,
-  Send,
-  XCircle,
-  Copy,
-  GitCommit,
-  GitBranch,
-  Star,
-  GitFork,
-  Activity,
-  FileText,
-  Award,
-  Play,
-  Check,
-  Download,
-  ShieldCheck
+  MapPin, Mail, Phone, Send, Download, ExternalLink,
+  CheckCircle2, XCircle, Copy, Check, Code2, Database,
+  Server, Wrench, Award, Activity, GitBranch, GitCommit,
+  Star, GitFork, ShieldCheck, Search, FileText,
+  ChevronRight, ArrowUpRight, Zap, Terminal,
 } from "lucide-react";
 
-function GithubIcon({ className = "w-4 h-4" }: { className?: string }) {
+import { whoamiData }           from "@/data/whoami";
+import { skillCategories }      from "@/data/skills";
+import { projectsData, Project }from "@/data/projects";
+import { timelineLogs }         from "@/data/timeline";
+import { certificatesData, Certificate } from "@/data/certificates";
+import { translations }         from "@/data/translations";
+import { useLanguage }          from "@/contexts/LanguageContext";
+
+const SERVICE_ID  = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID  || "service_rmat5kp";
+const TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "template_zt9llkk";
+const PUBLIC_KEY  = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY  || "3qW5e407vXhAIdlX5";
+
+function GithubIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
       <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
@@ -44,1132 +31,852 @@ function GithubIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
-import { whoamiData } from "@/data/whoami";
-import { skillCategories } from "@/data/skills";
-import { projectsData, Project } from "@/data/projects";
-import { timelineLogs } from "@/data/timeline";
-import { certificatesData } from "@/data/certificates";
+const catIcons: Record<string, React.ReactNode> = {
+  backend:           <Server   className="w-4 h-4" />,
+  database:          <Database className="w-4 h-4" />,
+  frontend:          <Code2    className="w-4 h-4" />,
+  "tools-secondary": <Wrench   className="w-4 h-4" />,
+};
 
-const SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || "service_rmat5kp";
-const TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "template_zt9llkk";
-const PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || "3qW5e407vXhAIdlX5";
+function LevelBadge({ tag }: { tag: string }) {
+  const cls =
+    tag === "CORE STACK" ? "badge-core"
+    : tag === "PRIMARY"  ? "badge-primary"
+    :                      "badge-secondary";
+  return (
+    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${cls}`}>{tag}</span>
+  );
+}
+
+/* ── Scroll Reveal ── */
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll(".reveal");
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) { e.target.classList.add("visible"); obs.unobserve(e.target); }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+}
+
+/* ── Typewriter ── */
+function useTypewriter(words: readonly string[], speed = 75, pause = 2200) {
+  const [display, setDisplay] = useState("");
+  const [wordIdx, setWordIdx] = useState(0);
+  const [charIdx, setCharIdx] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    const current = words[wordIdx];
+    const t = setTimeout(() => {
+      if (!deleting) {
+        setDisplay(current.slice(0, charIdx + 1));
+        if (charIdx + 1 === current.length) setTimeout(() => setDeleting(true), pause);
+        else setCharIdx(c => c + 1);
+      } else {
+        setDisplay(current.slice(0, charIdx - 1));
+        if (charIdx - 1 === 0) {
+          setDeleting(false);
+          setWordIdx(i => (i + 1) % words.length);
+          setCharIdx(0);
+        } else setCharIdx(c => c - 1);
+      }
+    }, deleting ? speed / 2 : speed);
+    return () => clearTimeout(t);
+  }, [charIdx, deleting, wordIdx, words, speed, pause]);
+
+  return display;
+}
+
+interface GithubRepo {
+  id: number;
+  name: string;
+  fullName: string;
+  repoUrl: string;
+  description: string;
+  homepage: string;
+  language: string;
+  topics: string[];
+  stars: number;
+  forks: number;
+  updatedAt: string;
+  isPrivate: boolean;
+}
 
 export default function Home() {
-  const [projectsList, setProjectsList] = useState<Project[]>(projectsData);
-  const [githubRepos, setGithubRepos] = useState<any[]>([]);
-  const [githubLoading, setGithubLoading] = useState(true);
+  const { lang } = useLanguage();
+  const tr = translations;
+
+  /* local shortcuts */
+  const h   = tr.hero;
+  const ab  = tr.about;
+  const sk  = tr.skills;
+  const pr  = tr.projects;
+  const gh  = tr.github;
+  const ce  = tr.certs;
+  const tl  = tr.timeline;
+  const co  = tr.contact;
+  const cv  = tr.cv;
+
+  const [projectsList,   setProjectsList]   = useState<Project[]>(projectsData);
+  const [githubRepos,    setGithubRepos]    = useState<GithubRepo[]>([]);
+  const [githubLoading,  setGithubLoading]  = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("backend");
-  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [searchQuery,    setSearchQuery]    = useState("");
+  const [activeTab,      setActiveTab]      = useState("backend");
+  const [copiedEmail,    setCopiedEmail]    = useState(false);
+  const [resumeOpen,     setResumeOpen]     = useState(false);
+  const [certs,          setCerts]          = useState<Certificate[]>(certificatesData);
+  const [form,           setForm]           = useState({ name: "", email: "", message: "" });
+  const [formStatus,     setFormStatus]     = useState<"idle"|"loading"|"success"|"error">("idle");
+  const [errorMsg,       setErrorMsg]       = useState("");
 
-  // Resume Modal State
-  const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
+  useReveal();
 
-  // Certificates State & Fetching
-  const [certificatesList, setCertificatesList] = useState<any[]>(certificatesData);
+  const typeWords = h.typewriterWords[lang];
+  const typeword  = useTypewriter(typeWords, 75, 2200);
 
   useEffect(() => {
-    async function fetchLiveCertificates() {
-      try {
-        const res = await fetch("/api/certificates");
-        const data = await res.json();
-        if (data.success && Array.isArray(data.certificates) && data.certificates.length > 0) {
-          setCertificatesList(data.certificates);
-        }
-      } catch (err) {
-        console.error("Failed to fetch live certificates:", err);
-      }
-    }
-    fetchLiveCertificates();
+    fetch("/api/certificates").then(r=>r.json())
+      .then(d => { if(d.success && d.certificates?.length) setCerts(d.certificates); })
+      .catch(()=>{});
   }, []);
-
-  // Fetch live projects from API / Supabase
   useEffect(() => {
-    async function fetchLiveProjects() {
-      try {
-        const res = await fetch("/api/projects");
-        const data = await res.json();
-        if (data.success && Array.isArray(data.projects) && data.projects.length > 0) {
-          setProjectsList(data.projects);
-        }
-      } catch (err) {
-        console.error("Failed to fetch live projects:", err);
-      }
-    }
-    fetchLiveProjects();
+    fetch("/api/projects").then(r=>r.json())
+      .then(d => { if(d.success && d.projects?.length) setProjectsList(d.projects); })
+      .catch(()=>{});
   }, []);
-
-  // Fetch live GitHub Repositories
   useEffect(() => {
-    async function fetchGithubData() {
-      try {
-        const res = await fetch("/api/github/repos?username=MohammadKevin");
-        const data = await res.json();
-        if (data.success && Array.isArray(data.repos)) {
-          setGithubRepos(data.repos);
-        }
-      } catch (err) {
-        console.error("Failed to fetch github repos:", err);
-      } finally {
-        setGithubLoading(false);
-      }
-    }
-    fetchGithubData();
+    fetch("/api/github/repos?username=MohammadKevin").then(r=>r.json())
+      .then(d => { if(d.success && d.repos) setGithubRepos(d.repos); })
+      .catch(()=>{}).finally(() => setGithubLoading(false));
   }, []);
 
-  // Form State
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm(p => ({ ...p, [e.target.name]: e.target.value }));
 
-  const [formStatus, setFormStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFormSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) {
-      setFormStatus("error");
-      setErrorMessage("Harap isi semua kolom perintah sebelum mengirim.");
-      return;
+    if (!form.name || !form.email || !form.message) {
+      setFormStatus("error"); setErrorMsg(co.errorFill[lang]); return;
     }
-
     setFormStatus("loading");
-    setErrorMessage("");
-
     try {
-      await sendEmail(
-        SERVICE_ID,
-        TEMPLATE_ID,
-        {
-          from_name: formData.name,
-          from_email: formData.email,
-          message: formData.message,
-        },
-        PUBLIC_KEY
-      );
-
+      await sendEmail(SERVICE_ID, TEMPLATE_ID,
+        { from_name: form.name, from_email: form.email, message: form.message }, PUBLIC_KEY);
       setFormStatus("success");
-      setFormData({ name: "", email: "", message: "" });
-    } catch (err: any) {
-      console.error("EmailJS Error:", err);
+      setForm({ name: "", email: "", message: "" });
+    } catch {
       setFormStatus("error");
-      setErrorMessage("Gagal mengirim pesan via terminal. Silakan gunakan tombol WhatsApp/Email di bawah.");
+      setErrorMsg(co.errorSend[lang]);
     }
   };
 
-  const copyEmailToClipboard = () => {
+  const copyEmail = () => {
     navigator.clipboard.writeText("kvn4.200581@gmail.com");
     setCopiedEmail(true);
     setTimeout(() => setCopiedEmail(false), 2000);
   };
 
-  // Filter projects
-  const filteredProjects = projectsList.filter((item) => {
-    const matchesCategory =
-      activeCategory === "All" ||
-      item.type.toLowerCase() === activeCategory.toLowerCase();
-
-    const matchesSearch =
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.problem && item.problem.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      item.tech.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    return matchesCategory && matchesSearch;
+  const filterLabels = ["All", "Backend", "Frontend", "Fullstack"];
+  const filtered = projectsList.filter(p => {
+    const matchCat = activeCategory === "All" || p.type.toLowerCase() === activeCategory.toLowerCase();
+    const q = searchQuery.toLowerCase();
+    const descStr = typeof p.desc === "string" ? p.desc : (p.desc?.[lang] || "");
+    const probStr = typeof p.problem === "string" ? p.problem : (p.problem?.[lang] || "");
+    const matchQ = !q || p.title.toLowerCase().includes(q)
+      || descStr.toLowerCase().includes(q)
+      || probStr.toLowerCase().includes(q)
+      || p.tech.some(t => t.toLowerCase().includes(q));
+    return matchCat && matchQ;
   });
 
+  /* ─── RENDER ─────────────────────────────────────────────────── */
   return (
-    <main className="min-h-screen bg-background text-slate-300 relative overflow-hidden bg-grid-pattern selection:bg-amber-400/20 selection:text-amber-300 transition-colors duration-500">
-      
-      {/* Ambient background glows */}
-      <div className="absolute top-20 left-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-[35%] right-10 w-96 h-96 bg-cyan-500/5 rounded-full blur-[140px] pointer-events-none" />
+    <main className="min-h-screen bg-[#080f1e] text-slate-300 relative overflow-hidden">
 
-      {/* ================= HERO SECTION ================= */}
-      <section id="hero" className="pt-32 pb-20 relative z-10 font-mono">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
-            {/* Left Col: Text & Identification */}
-            <div className="lg:col-span-6 flex flex-col gap-5">
-              
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-slate-900 border border-slate-800 text-xs w-fit">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-amber-400 font-bold">$ whoami --verbose</span>
+      {/* ══════════════ HERO ══════════════ */}
+      <section id="hero" className="relative z-10 hero-bg bg-grid pt-24 pb-20 md:pt-32 md:pb-28 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col lg:flex-row items-center gap-14 lg:gap-20">
+
+            {/* Photo */}
+            <div className="order-first lg:order-last shrink-0 relative flex items-center justify-center">
+              <div className="photo-wrap">
+                <div className="absolute inset-[-18px] rounded-full animate-pulse-glow opacity-60 pointer-events-none" />
+                <div className="photo-ring w-56 h-56 md:w-64 md:h-64 relative animate-float">
+                  <Image
+                    src="/images/logo.png" alt="Mohammad Kevin" fill
+                    sizes="(max-width: 768px) 224px, 256px"
+                    className="object-cover" priority
+                  />
+                </div>
+              </div>
+              <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 z-10
+                flex items-center gap-2 px-4 py-2 rounded-full bg-[#0d1628]
+                border border-white/10 text-xs font-semibold text-white whitespace-nowrap
+                shadow-xl shadow-black/40">
+                <span className="status-dot" />{h.available[lang]}
+              </div>
+            </div>
+
+            {/* Text */}
+            <div className="flex-1 flex flex-col gap-5 text-center lg:text-left">
+              <div className="section-label mx-auto lg:mx-0 animate-fade-up">
+                {h.badge[lang]}
               </div>
 
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight font-sans tracking-tight">
-                Mohammad Kevin
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white leading-[1.05] tracking-tight animate-fade-up delay-100">
+                {h.greeting[lang]}<br />
+                <span className="accent-word">Kevin</span>.
               </h1>
 
-              <div className="flex flex-wrap items-center gap-2 text-sm sm:text-base font-bold">
-                <span className="text-amber-400 px-2 py-0.5 rounded bg-amber-400/10 border border-amber-500/30">
-                  Backend & Fullstack Developer
+              <p className="text-slate-400 text-base sm:text-lg leading-relaxed animate-fade-up delay-200">
+                {h.typewriterPrefix[lang]}{" "}
+                <span className="font-semibold text-white font-mono">
+                  {typeword}
+                  <span className="animate-blink text-[var(--accent-light)]">|</span>
                 </span>
-                <span className="text-slate-500">|</span>
-                <span className="text-slate-400">SMK Telkom Malang</span>
-              </div>
-
-              <p className="text-slate-400 text-sm sm:text-base font-sans leading-relaxed max-w-xl">
-                Saya merancang arsitektur API yang aman, handal, dan berkinerja tinggi. Berspesialisasi dalam{" "}
-                <span className="text-white font-mono font-semibold">Next.js, NestJS, Express, Prisma, PostgreSQL</span>, dan{" "}
-                <span className="text-white font-mono font-semibold">MySQL</span> untuk sistem transaksi Kasir (POS) & Arsip Digital.
               </p>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <a
-                  href="#contact"
-                  className="inline-flex items-center gap-2 px-5 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 transition-all focus-visible:ring-2 focus-visible:ring-white"
-                >
-                  <Rocket className="w-4 h-4" />
-                  <span>$ ./contact.sh</span>
-                </a>
+              <p className="text-slate-500 text-sm sm:text-base leading-relaxed max-w-lg mx-auto lg:mx-0 animate-fade-up delay-300">
+                {lang === "id"
+                  ? <>Siswa <strong className="text-slate-300">SMK Telkom Malang</strong> dengan 2+ tahun pengalaman nyata. Stack: <span className="text-[var(--accent-light)] font-mono text-sm">Next.js · NestJS · Prisma · PostgreSQL</span>.</>
+                  : <>Student at <strong className="text-slate-300">SMK Telkom Malang</strong> with 2+ years of real-world experience. Stack: <span className="text-[var(--accent-light)] font-mono text-sm">Next.js · NestJS · Prisma · PostgreSQL</span>.</>
+                }
+              </p>
 
-                <button
-                  onClick={() => setIsResumeModalOpen(true)}
-                  className="inline-flex items-center gap-2 px-5 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-400/40 text-amber-400 font-semibold text-xs rounded transition-all focus-visible:ring-2 focus-visible:ring-amber-400 cursor-pointer"
-                >
-                  <FileText className="w-4 h-4 text-amber-400" />
-                  <span>$ ./download_cv.sh</span>
-                </button>
+              <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500 justify-center lg:justify-start animate-fade-up delay-300">
+                <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-[var(--accent-light)]"/>{h.locMalang[lang]}</span>
+                <span className="flex items-center gap-1.5"><Terminal className="w-4 h-4 text-[var(--accent-light)]"/>{h.school2[lang]}</span>
+                <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-[var(--accent-light)]"/>{h.exp[lang]}</span>
               </div>
 
-              {/* Key Metrics Bar */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-6 border-t border-slate-800/80">
+              <div className="flex flex-wrap gap-3 justify-center lg:justify-start animate-fade-up delay-400">
+                <a href="#contact" id="hero-contact-btn" className="btn-accent rounded-xl text-sm">
+                  <Mail className="w-4 h-4" />{h.contactBtn[lang]}
+                </a>
+                <button id="hero-cv-btn" onClick={() => setResumeOpen(true)} className="btn-ghost rounded-xl text-sm">
+                  <Download className="w-4 h-4" />{h.cvBtn[lang]}
+                </button>
+                <a href="https://github.com/MohammadKevin" target="_blank" rel="noopener noreferrer"
+                  id="hero-github-btn" className="btn-ghost rounded-xl text-sm px-3.5">
+                  <GithubIcon className="w-4 h-4" />
+                </a>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-5 border-t border-white/6 animate-fade-up delay-500">
                 {whoamiData.stats.map((st) => (
-                  <div key={st.label} className="flex flex-col gap-0.5 p-2 rounded bg-slate-900/50 border border-slate-800/60">
-                    <span className="text-lg font-black text-amber-400">{st.value}</span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">{st.label}</span>
+                  <div key={st.label} className="flex flex-col gap-0.5">
+                    <span className="text-2xl font-black" style={{color:"var(--accent-light)"}}>{st.value}</span>
+                    <span className="text-[10px] text-slate-600 uppercase tracking-wider font-semibold leading-tight">{st.label}</span>
                   </div>
                 ))}
               </div>
-
             </div>
-
-            {/* Right Col: Signature Visual Element (Neofetch / System Diagnostics Panel) */}
-            <div className="lg:col-span-6">
-              <div className="rounded-xl border border-slate-700/80 bg-[#0d1117] shadow-2xl overflow-hidden font-mono text-xs">
-                
-                {/* IDE Window Header */}
-                <div className="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
-                    <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
-                    <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
-                  </div>
-                  <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-                    <Terminal className="w-3.5 h-3.5 text-amber-400" />
-                    <span>neofetch --system-diagnostics</span>
-                  </div>
-                  <div className="text-[10px] text-slate-400 uppercase tracking-widest">
-                    v2.4-stable
-                  </div>
-                </div>
-
-                {/* Neofetch Content Body */}
-                <div className="p-5 grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
-                  
-                  {/* ASCII Logo / Portrait Box */}
-                  <div className="sm:col-span-5 flex flex-col items-center justify-center p-4 bg-slate-950/80 border border-slate-800 rounded-lg">
-                    <pre className="text-[9px] leading-none font-bold text-amber-400 select-none">
-{`  __  __ _  __
- |  \\/  | |/ /
- | |\\/| | ' / 
- | |  | | . \\ 
- |_|  |_|_|\\_\\`}
-                    </pre>
-                    <div className="mt-3 text-center">
-                      <span className="text-white font-bold text-xs block">KEVIN.SYS</span>
-                      <span className="text-[10px] text-emerald-400 font-mono block mt-0.5">● ONLINE [ID: 9457]</span>
-                    </div>
-                  </div>
-
-                  {/* Neofetch Key-Value Diagnostics */}
-                  <div className="sm:col-span-7 flex flex-col gap-2 text-[11px]">
-                    <div className="flex items-center gap-2 pb-1 border-b border-slate-800">
-                      <span className="text-amber-400 font-bold">OS:</span>
-                      <span className="text-slate-200">DevKernel / Linux x86_64</span>
-                    </div>
-                    <div className="flex items-center gap-2 pb-1 border-b border-slate-800">
-                      <span className="text-amber-400 font-bold">HOST:</span>
-                      <span className="text-slate-200">SMK Telkom Malang (ID)</span>
-                    </div>
-                    <div className="flex items-center gap-2 pb-1 border-b border-slate-800">
-                      <span className="text-amber-400 font-bold">ROLE:</span>
-                      <span className="text-slate-200">Backend & Fullstack Dev</span>
-                    </div>
-                    <div className="flex items-center gap-2 pb-1 border-b border-slate-800">
-                      <span className="text-amber-400 font-bold">UPTIME:</span>
-                      <span className="text-slate-200">2+ Years Active Coding</span>
-                    </div>
-                    <div className="flex items-center gap-2 pb-1 border-b border-slate-800">
-                      <span className="text-amber-400 font-bold">CORE:</span>
-                      <span className="text-slate-200">Next, Nest, Express, Prisma</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-amber-400 font-bold">DB ENGINE:</span>
-                      <span className="text-slate-200">PostgreSQL & MySQL</span>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Interactive CLI Prompt Line */}
-                <div className="px-5 py-3 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-amber-400">$</span>
-                    <span className="text-slate-300">echo $STATUS</span>
-                    <span className="text-slate-400">=&gt;</span>
-                    <span className="text-emerald-400 font-bold">Ready for Freelance & Systems Collaboration</span>
-                    <span className="inline-block w-2 h-4 bg-amber-400 animate-blink" />
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
 
+      {/* ══════════════ ABOUT ══════════════ */}
+      <section id="whoami" className="relative z-10 py-24 border-t border-white/5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
 
-      {/* ================= ABOUT / WHOAMI SECTION ================= */}
-      <section id="whoami" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex flex-col gap-2 mb-10">
-            <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest">
-              <UserCheck className="w-4 h-4" />
-              <span>$ cat whoami.md</span>
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
-              Tentang Saya & Filosofi Kode
+          <div className="mb-12 reveal">
+            <div className="section-label mb-4">{ab.label[lang]}</div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+              {ab.heading[lang]} <span className="accent-word">{ab.headingAccent[lang]}</span>?
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            
-            {/* Main Narrative Terminal Window */}
-            <div className="lg:col-span-8 rounded-xl border border-slate-800 bg-[#0d1117] p-6 sm:p-8 flex flex-col justify-between">
-              <div className="flex flex-col gap-4 font-sans text-slate-300 leading-relaxed text-sm sm:text-base">
-                <p>
-                  Halo! Saya <strong className="text-white font-mono">Mohammad Kevin</strong>, seorang Fullstack & Backend Developer yang menempuh pendidikan di <strong className="text-white font-mono">SMK Telkom Malang</strong>, berdomisili di Malang, Indonesia.
-                </p>
-                <p>
-                  Fokus utama saya adalah membangun arsitektur API yang terstruktur dan scalable, mengoptimalkan query database relasional, serta menerjemahkan logika bisnis rumit menjadi antarmuka dashboard admin yang bersih dan responsif.
-                </p>
-                <p>
-                  Selama 2 tahun terakhir, saya telah mengembangkan berbagai sistem transaksi keuangan seperti <strong className="text-amber-400 font-mono">Aplikasi Kasir (Point of Sale)</strong>, <strong className="text-amber-400 font-mono">Arsip Digital Dokumen</strong>, serta engine persediaan barang. Saya lebih menyukai solusi pragmatis dengan arsitektur modular daripada kode berlebihan.
-                </p>
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-3 flex flex-col gap-5 reveal">
+              <div className="card-flat rounded-2xl p-7 flex flex-col gap-5">
 
-              {/* Core Philosophy Code Snippet */}
-              <div className="mt-6 p-4 rounded bg-slate-950 border border-slate-800 font-mono text-xs text-slate-400">
-                <div className="text-slate-500 mb-1">// philosophy.ts</div>
-                <div className="text-amber-400">const devPhilosophy = &#123;</div>
-                <div className="pl-4 text-slate-300">architecture: <span className="text-emerald-400">"Modular & Clean Code"</span>,</div>
-                <div className="pl-4 text-slate-300">database: <span className="text-cyan-400">"Indexed & Query-Tuned"</span>,</div>
-                <div className="pl-4 text-slate-300">stack: [<span className="text-amber-300">"Next.js"</span>, <span className="text-amber-300">"NestJS"</span>, <span className="text-amber-300">"Prisma"</span>, <span className="text-amber-300">"PostgreSQL"</span>]</div>
-                <div className="text-amber-400">&#125;;</div>
+                <div className="flex items-center gap-4">
+                  <div className="photo-ring w-14 h-14 relative shrink-0">
+                    <Image src="/images/logo.png" alt="Kevin" fill sizes="56px" className="object-cover"/>
+                  </div>
+                  <div>
+                    <p className="font-bold text-white">Mohammad Kevin Arif Rudianto</p>
+                    <p className="text-sm text-[var(--accent-light)] font-mono">@MohammadKevin · Malang, ID</p>
+                  </div>
+                </div>
+
+                <div className="divider"/>
+
+                <div className="flex flex-col gap-4 text-[15px] text-slate-400 leading-relaxed">
+                  <p>{lang === "id"
+                    ? <>Halo! Nama saya <strong className="text-white">Mohammad Kevin</strong> — seorang developer yang masih duduk di bangku <strong className="text-white">SMK Telkom Malang</strong>, tapi sudah terjun langsung ke dunia pengembangan software nyata selama 2 tahun lebih.</>
+                    : <>Hey! I&apos;m <strong className="text-white">Mohammad Kevin</strong> — a developer still studying at <strong className="text-white">SMK Telkom Malang</strong>, but I&apos;ve been building real-world software for over 2 years.</>
+                  }</p>
+                  <p>{lang === "id"
+                    ? <>Saya percaya bahwa kode yang baik adalah kode yang <em className="text-slate-300">menyelesaikan masalah nyata</em> — bukan sekadar terlihat keren. Karena itu saya fokus pada arsitektur API yang benar-benar scalable, query database yang efisien, dan antarmuka yang intuitif.</>
+                    : <>I believe great code is code that <em className="text-slate-300">solves real problems</em> — not just looks cool. That&apos;s why I focus on truly scalable API architecture, efficient database queries, and intuitive interfaces.</>
+                  }</p>
+                  <p>{lang === "id"
+                    ? <>Dari membangun sistem kasir untuk UMKM, arsip digital, hingga backend API enterprise — saya menikmati setiap tantangan yang membuat saya menjadi developer yang lebih baik.</>
+                    : <>From building cashier systems for small businesses, digital archives, to enterprise backend APIs — I enjoy every challenge that makes me a better developer.</>
+                  }</p>
+                </div>
+
+                <div className="callout">{ab.quote[lang]}</div>
+
+                <div className="p-4 rounded-xl bg-[#060912] border border-white/5 font-mono text-xs text-slate-400 leading-loose">
+                  <p className="text-slate-600">{ab.codeComment[lang]}</p>
+                  <p><span className="text-[var(--accent-light)]">const</span> kevin = {"{"}</p>
+                  <p className="pl-4">stack: <span className="text-emerald-400">[&quot;Next.js&quot;, &quot;NestJS&quot;, &quot;Prisma&quot;, &quot;PostgreSQL&quot;]</span>,</p>
+                  <p className="pl-4">loves: <span className="text-sky-400">{ab.codeLoves[lang]}</span>,</p>
+                  <p className="pl-4">goal: <span className="text-purple-400">{ab.codeGoal[lang]}</span>,</p>
+                  <p className="pl-4">status: <span className="text-emerald-400">{ab.codeStatus[lang]}</span></p>
+                  <p>{"}"}</p>
+                </div>
               </div>
             </div>
 
-            {/* Quick Specs Sidebar */}
-            <div className="lg:col-span-4 rounded-xl border border-slate-800 bg-[#0d1117] p-6 flex flex-col justify-between font-mono text-xs gap-4">
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-800 text-amber-400 font-bold uppercase tracking-wider">
-                <Server className="w-4 h-4" />
-                <span>SYSTEM ENVIRONMENT</span>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <div>
-                  <span className="text-slate-400 block text-[10px]">BASE LOCATION:</span>
-                  <span className="text-white font-bold">Malang, Jawa Timur, Indonesia</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">INSTITUTION:</span>
-                  <span className="text-white font-bold">SMK Telkom Malang (RPL)</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">PRIMARY STACK:</span>
-                  <span className="text-amber-400 font-bold">Next.js, NestJS, Express, Prisma</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">DATABASE ENGINE:</span>
-                  <span className="text-cyan-400 font-bold">PostgreSQL & MySQL</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">SECONDARY STACK:</span>
-                  <span className="text-slate-400">Laravel / PHP (Historical Monolith)</span>
+            <div className="lg:col-span-2 flex flex-col gap-4 reveal reveal-delay-2">
+              <div className="card-flat rounded-2xl p-6 flex flex-col gap-4">
+                <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">{ab.quickInfoLabel[lang]}</p>
+                {[
+                  { label: ab.location[lang],      value: ab.locationVal[lang] },
+                  { label: ab.education[lang],     value: ab.educationVal[lang] },
+                  { label: ab.primaryStack[lang],  value: "Next.js · NestJS · Prisma" },
+                  { label: ab.database[lang],      value: "PostgreSQL & MySQL" },
+                  { label: ab.extra[lang],         value: ab.extraVal[lang] },
+                ].map(item => (
+                  <div key={item.label} className="py-2 border-b border-white/5 last:border-0">
+                    <p className="text-[10px] text-slate-600 uppercase tracking-wider mb-0.5 font-semibold">{item.label}</p>
+                    <p className="text-sm text-slate-300 font-medium">{item.value}</p>
+                  </div>
+                ))}
+                <div className="pt-2 flex items-center gap-2">
+                  <span className="status-dot"/><span className="text-sm text-emerald-400 font-semibold">{ab.openFreelance[lang]}</span>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px]">
-                <span className="text-emerald-400 font-bold">● FREELANCE AVAILABILITY</span>
-                <span className="text-slate-400">OPEN</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-
-      {/* ================= TECH STACK / SKILLS SECTION ================= */}
-      <section id="stack" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex flex-col gap-2 mb-10">
-            <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest">
-              <Settings className="w-4 h-4" />
-              <span>$ cat .config/stack.json</span>
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
-              Tech Stack & Pencapaian Konkret
-            </h2>
-            <p className="text-slate-400 text-xs sm:text-sm font-sans max-w-2xl">
-              Fokus utama pada ekosistem TypeScript & Database relasional. Persentase indikatif diganti dengan fakta pencapaian nyata per kategori.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
-            {/* Left Nav: Skill Category Tabs */}
-            <div className="lg:col-span-4 flex flex-col gap-2">
-              {skillCategories.map((cat) => {
-                const isActive = activeTab === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => setActiveTab(cat.id)}
-                    className={`w-full text-left p-4 rounded-lg border transition-all duration-200 flex items-center justify-between cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-400 ${
-                      isActive
-                        ? "bg-amber-400/10 border-amber-500/40 text-amber-400 shadow-lg"
-                        : "bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
-                    }`}
-                  >
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[10px] text-slate-500 uppercase">{cat.cmd}</span>
-                      <h3 className="font-bold text-sm text-white font-sans">{cat.title}</h3>
-                    </div>
-                    <span className="text-xs font-mono font-bold text-amber-400">
-                      {isActive ? "&gt;" : ""}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Right Panel: Selected Skill Group Details */}
-            <div className="lg:col-span-8 rounded-xl border border-slate-800 bg-[#0d1117] p-6 sm:p-8 flex flex-col gap-6">
-              
-              {/* Category Header */}
-              <div className="pb-4 border-b border-slate-800 flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-extrabold text-white font-sans">
-                    {skillCategories.find((c) => c.id === activeTab)?.title}
-                  </h3>
-                  <span className="text-xs text-slate-400 font-mono">
-                    {skillCategories.find((c) => c.id === activeTab)?.cmd}
-                  </span>
-                </div>
-              </div>
-
-              {/* Skills Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {skillCategories
-                  .find((c) => c.id === activeTab)
-                  ?.skills.map((skill) => (
-                    <div
-                      key={skill.name}
-                      className="p-3.5 rounded bg-slate-950 border border-slate-800 flex flex-col gap-1.5 hover:border-slate-700 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white font-sans">{skill.name}</span>
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
-                          skill.levelTag === "CORE STACK"
-                            ? "bg-amber-400/10 border-amber-500/30 text-amber-400"
-                            : skill.levelTag === "PRIMARY"
-                            ? "bg-cyan-400/10 border-cyan-500/30 text-cyan-400"
-                            : "bg-slate-800 border-slate-700 text-slate-400"
-                        }`}>
-                          {skill.levelTag}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-400 leading-snug font-sans">
-                        {skill.desc}
-                      </p>
-                    </div>
+              <div className="card-flat rounded-2xl p-5 flex flex-col gap-3">
+                <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">{ab.stackLabel[lang]}</p>
+                <div className="flex flex-wrap gap-2">
+                  {["Next.js","NestJS","Express","Prisma","PostgreSQL","MySQL","TypeScript","Redis","Tailwind CSS"].map(t => (
+                    <span key={t} className="tech-pill">{t}</span>
                   ))}
-              </div>
-
-              {/* Concrete Achievements Box */}
-              <div className="p-4 rounded-lg bg-slate-950 border border-slate-800 flex flex-col gap-3 mt-2">
-                <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Pencapaian & Hasil Implementasi Konkret</span>
                 </div>
-                <ul className="flex flex-col gap-2 font-sans text-xs text-slate-300">
-                  {skillCategories
-                    .find((c) => c.id === activeTab)
-                    ?.achievements.map((ach, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
-                        <span className="text-amber-400 font-mono font-bold mt-0.5">&gt;</span>
-                        <span>{ach}</span>
-                      </li>
-                    ))}
-                </ul>
               </div>
-
             </div>
-
           </div>
         </div>
       </section>
 
+      {/* ══════════════ SKILLS ══════════════ */}
+      <section id="stack" className="relative z-10 py-24 border-t border-white/5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
 
-      {/* ================= FEATURED PROJECTS SECTION ================= */}
-      <section id="projects" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-            <div>
-              <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest mb-1">
-                <Code2 className="w-4 h-4" />
-                <span>$ ./fetch_projects.sh --status=deployed</span>
-              </div>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
-                Portofolio Proyek Terstruktur
-              </h2>
-            </div>
+          <div className="mb-12 reveal">
+            <div className="section-label mb-4">{sk.label[lang]}</div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+              {sk.heading[lang]} <span className="accent-word">{sk.headingAccent[lang]}</span>
+            </h2>
+            <p className="text-slate-500 text-sm mt-2 max-w-md">{sk.subtext[lang]}</p>
+          </div>
 
-            {/* Filter Buttons & Search */}
-            <div className="flex flex-wrap items-center gap-2">
-              {["All", "Backend", "Frontend", "Fullstack"].map((cat) => (
+          <div className="flex flex-wrap gap-2 mb-7 reveal">
+            {skillCategories.map(cat => {
+              const active = activeTab === cat.id;
+              return (
                 <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-3 py-1.5 rounded text-xs font-mono transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-400 ${
-                    activeCategory === cat
-                      ? "bg-amber-400 text-slate-950 font-bold shadow-md"
-                      : "bg-slate-900 border border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
+                  key={cat.id}
+                  id={`skill-tab-${cat.id}`}
+                  onClick={() => setActiveTab(cat.id)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
+                    cursor-pointer transition-all duration-200 ${
+                    active
+                      ? "bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent-glow)]"
+                      : "card-flat text-slate-400 hover:text-white"
                   }`}
                 >
-                  --{cat.toLowerCase()}
+                  <span className={active ? "text-white/70" : "text-[var(--accent-light)]"}>{catIcons[cat.id]}</span>
+                  {cat.title}
+                </button>
+              );
+            })}
+          </div>
+
+          {skillCategories.filter(c => c.id === activeTab).map(cat => (
+            <div key={cat.id} className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div className="card-flat rounded-2xl p-6 reveal">
+                <h3 className="font-bold text-white text-sm mb-5">{cat.title}</h3>
+                <div className="flex flex-col divide-y divide-white/5">
+                  {cat.skills.map(sk => (
+                    <div key={sk.name} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                      <div>
+                        <h3 className="font-bold text-white text-sm leading-snug">{sk.name}</h3>
+                        <p className="text-xs text-slate-500 mt-0.5 leading-snug">{sk.desc[lang]}</p>
+                      </div>
+                      <LevelBadge tag={sk.levelTag}/>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="card-flat rounded-2xl p-6 reveal reveal-delay-2">
+                <h3 className="font-bold text-white text-sm mb-5 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
+                  {translations.skills.achievementsHeader[lang]}
+                </h3>
+                <div className="flex flex-col gap-5">
+                  {cat.skills.flatMap(sk => sk.achievements).map((a, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-lg bg-[var(--accent-muted)] border border-[var(--accent-border)]
+                        flex items-center justify-center text-[10px] font-bold text-[var(--accent-light)] shrink-0 mt-0.5">
+                        {i + 1}
+                      </div>
+                      <p className="text-sm text-slate-400 leading-relaxed">{a[lang]}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ══════════════ PROJECTS ══════════════ */}
+      <section id="projects" className="relative z-10 py-24 border-t border-white/5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-10">
+            <div className="reveal">
+              <div className="section-label mb-4">{pr.label[lang]}</div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+                {pr.heading[lang]} <span className="accent-word">{pr.headingAccent[lang]}</span>
+              </h2>
+              <p className="text-slate-500 text-sm mt-2">{pr.subtext[lang]}</p>
+            </div>
+            <div className="flex flex-wrap gap-2 reveal">
+              {filterLabels.map(cat => (
+                <button
+                  key={cat}
+                  id={`proj-filter-${cat.toLowerCase()}`}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer transition-all ${
+                    activeCategory === cat
+                      ? "bg-[var(--accent)] text-white shadow-md"
+                      : "card-flat text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {cat === "All" ? pr.filterAll[lang] : cat}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="relative mb-8 max-w-md">
+          <div className="relative mb-8 max-w-sm reveal">
+            <Search className="w-4 h-4 text-slate-600 absolute left-3.5 top-1/2 -translate-y-1/2"/>
             <input
-              type="text"
-              placeholder="Filter nama proyek, stack, atau masalah..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2.5 pl-10 rounded bg-slate-900 border border-slate-800 focus:outline-none focus:border-amber-400 text-xs text-white placeholder-slate-500 font-mono"
+              id="project-search"
+              type="text" placeholder={pr.searchPlaceholder[lang]}
+              value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 rounded-xl card-flat text-sm text-white
+                placeholder-slate-600 focus:outline-none border border-white/6
+                focus:border-[var(--accent-border)] transition-all"
             />
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
 
-          {/* Projects Grid */}
-          {filteredProjects.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-              {filteredProjects.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-xl border border-slate-800 bg-[#0d1117] hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between p-6 relative overflow-hidden group h-full"
-                >
-                  {/* Top Gradient Bar Accent */}
-                  <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${item.color && item.color.includes('from-') ? item.color : 'from-amber-500 to-yellow-500'} opacity-75 group-hover:opacity-100 transition-opacity`} />
+          {filtered.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filtered.map((item, i) => (
+                <div key={item.id} className={`card rounded-2xl p-6 flex flex-col gap-4 relative overflow-hidden reveal reveal-delay-${Math.min(i+1,4)}`}>
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-[var(--accent)] opacity-50"/>
 
-                  <div className="flex-1 flex flex-col justify-between gap-4">
-                    
-                    <div className="flex flex-col gap-3">
-                      {/* Card Header Tag */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">
-                          {item.category}
-                        </span>
-                        <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">
-                          {item.type}
-                        </span>
-                      </div>
-
-                      <h3 className="text-lg font-bold text-white font-sans tracking-tight group-hover:text-amber-400 transition-colors line-clamp-1">{item.title}</h3>
-                      <p className="text-xs text-slate-400 font-sans leading-relaxed line-clamp-2 min-h-[2.5rem]">
-                        {item.desc}
-                      </p>
-
-                      {/* Problem Solved */}
-                      {item.problem && (
-                        <div className="p-3 rounded bg-slate-950 border border-slate-800/80 flex flex-col gap-1 text-xs">
-                          <span className="text-[10px] text-rose-400 font-bold uppercase">$ problem.log:</span>
-                          <p className="text-slate-300 font-sans text-[11px] leading-snug line-clamp-2">
-                            {item.problem}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Impact / Results */}
-                      {item.impact && (
-                        <div className="p-3 rounded bg-slate-950 border border-slate-800/80 flex flex-col gap-1 text-xs">
-                          <span className="text-[10px] text-emerald-400 font-bold uppercase">$ impact.metric:</span>
-                          <p className="text-slate-300 font-sans text-[11px] leading-snug line-clamp-2">
-                            {item.impact}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Tech Badges */}
-                    <div className="flex flex-wrap gap-1.5 pt-2 mt-auto">
-                      {item.tech.map((t) => (
-                        <span
-                          key={t}
-                          className="text-[10px] text-slate-300 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded font-mono"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[var(--accent-light)] uppercase tracking-widest">{item.category}</span>
+                    <span className="tech-pill">{item.type}</span>
                   </div>
 
-                  {/* Card Actions (Live Demo & Source Code - Pinned to bottom) */}
-                  <div className="flex items-center justify-between gap-2 mt-6 pt-4 border-t border-slate-800">
-                    <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white leading-snug line-clamp-1">{item.title}</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">
+                    {typeof item.desc === "string" ? item.desc : item.desc?.[lang] || ""}
+                  </p>
+
+                  {item.problem && (
+                    <div className="p-3 rounded-xl bg-rose-500/5 border border-rose-500/12">
+                      <p className="text-rose-400 font-bold text-[10px] mb-1 uppercase tracking-wider">{pr.labelProblem[lang]}</p>
+                      <p className="text-xs text-slate-400 line-clamp-2">
+                        {typeof item.problem === "string" ? item.problem : item.problem?.[lang] || ""}
+                      </p>
+                    </div>
+                  )}
+                  {item.impact && (
+                    <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/12">
+                      <p className="text-emerald-400 font-bold text-[10px] mb-1 uppercase tracking-wider">{pr.labelImpact[lang]}</p>
+                      <p className="text-xs text-slate-400 line-clamp-2">
+                        {typeof item.impact === "string" ? item.impact : item.impact?.[lang] || ""}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-1.5 mt-auto">
+                    {item.tech.map(t => <span key={t} className="tech-pill">{t}</span>)}
+                  </div>
+
+                  {(item.demoUrl || item.repoUrl) && (
+                    <div className="flex items-center gap-2 pt-3 border-t border-white/5">
                       {item.demoUrl && item.demoUrl.length > 0 && (
-                        <a
-                          href={item.demoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-bold transition-all shadow-sm focus-visible:ring-2 focus-visible:ring-white"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          Live Demo
+                        <a href={item.demoUrl} target="_blank" rel="noopener noreferrer" className="btn-accent text-xs px-3 py-1.5 rounded-lg">
+                          <ExternalLink className="w-3.5 h-3.5"/> {pr.demo[lang]}
                         </a>
                       )}
                       {item.repoUrl && item.repoUrl.length > 0 && (
-                        <a
-                          href={item.repoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 text-[11px] font-semibold border border-slate-700 transition-all focus-visible:ring-2 focus-visible:ring-amber-400"
-                        >
-                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                            <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
-                          </svg>
-                          Source Code
+                        <a href={item.repoUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost text-xs px-3 py-1.5 rounded-lg">
+                          <GithubIcon className="w-3.5 h-3.5"/> {pr.repo[lang]}
                         </a>
                       )}
                     </div>
-
-                    <a
-                      href="#contact"
-                      className="text-[11px] font-bold text-amber-400 hover:underline"
-                    >
-                      $ detail --info
-                    </a>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 bg-[#0d1117] rounded-xl border border-slate-800">
-              <Search className="w-8 h-8 text-slate-500 mx-auto mb-2" />
-              <p className="text-sm text-slate-400 font-sans">Tidak ada proyek yang sesuai dengan kriteria pencarian.</p>
+            <div className="text-center py-20 card-flat rounded-2xl reveal">
+              <Search className="w-9 h-9 text-slate-700 mx-auto mb-3"/>
+              <p className="text-slate-500">{pr.empty[lang]}</p>
             </div>
           )}
-
         </div>
       </section>
 
+      {/* ══════════════ GITHUB ══════════════ */}
+      <section id="github" className="relative z-10 py-24 border-t border-white/5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
 
-      {/* ================= GITHUB ACTIVITY & REPOSITORIES SECTION ================= */}
-      <section id="github" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-            <div>
-              <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest mb-1">
-                <GithubIcon className="w-4 h-4" />
-                <span>$ git log --author=MohammadKevin --stat --graph</span>
-              </div>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
-                Aktivitas & Repositori GitHub
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-10">
+            <div className="reveal">
+              <div className="section-label mb-4">{gh.label[lang]}</div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+                {gh.heading[lang]} <span className="accent-word">{gh.headingAccent[lang]}</span>
               </h2>
             </div>
-            <a
-              href="https://github.com/MohammadKevin"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-amber-300 text-xs font-semibold border border-slate-800 hover:border-amber-400/40 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-amber-400"
-            >
-              <GithubIcon className="w-4 h-4" />
-              <span>@MohammadKevin di GitHub</span>
-              <ExternalLink className="w-3.5 h-3.5" />
+            <a href="https://github.com/MohammadKevin" target="_blank" rel="noopener noreferrer"
+              id="github-profile-link" className="btn-ghost rounded-xl text-sm reveal">
+              <GithubIcon className="w-4 h-4"/>
+              @MohammadKevin
+              <ArrowUpRight className="w-4 h-4"/>
             </a>
           </div>
 
-          {/* Activity Cards Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="p-5 rounded-xl border border-slate-800 bg-[#0d1117] flex items-center gap-4 shadow-lg">
-              <div className="p-3 rounded-lg bg-amber-400/10 border border-amber-500/20 text-amber-400">
-                <Code2 className="w-6 h-6" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-7">
+            {[
+              { icon: <Code2 className="w-5 h-5"/>, val: githubRepos.length > 0 ? `${githubRepos.length}+` : "66+", label: gh.publicRepos[lang], color: "text-[var(--accent-light)]" },
+              { icon: <Activity className="w-5 h-5"/>, val: gh.focus[lang], label: gh.focusLabel[lang], color: "text-emerald-400" },
+              { icon: <GitCommit className="w-5 h-5"/>, val: gh.statusActive[lang], label: gh.statusLabel[lang], color: "text-sky-400" },
+            ].map((s, i) => (
+              <div key={i} className={`card-flat rounded-2xl p-5 flex items-center gap-4 reveal reveal-delay-${i+1}`}>
+                <div className="p-2.5 rounded-xl bg-[var(--accent-muted)] border border-[var(--accent-border)]">
+                  <span className="text-[var(--accent-light)]">{s.icon}</span>
+                </div>
+                <div>
+                  <p className={`font-bold text-sm ${s.color}`}>{s.val}</p>
+                  <p className="text-xs text-slate-500">{s.label}</p>
+                </div>
               </div>
-              <div>
-                <span className="text-2xl font-extrabold text-white">{githubRepos.length > 0 ? githubRepos.length : "66+"}</span>
-                <span className="text-xs text-slate-400 block font-sans">Repositori Publik Aktif</span>
-              </div>
-            </div>
+            ))}
+          </div>
 
-            <div className="p-5 rounded-xl border border-slate-800 bg-[#0d1117] flex items-center gap-4 shadow-lg">
-              <div className="p-3 rounded-lg bg-emerald-400/10 border border-emerald-500/20 text-emerald-400">
-                <Activity className="w-6 h-6" />
+          <div className="card-flat rounded-2xl p-6 mb-7 reveal">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                <GitBranch className="w-4 h-4 text-[var(--accent-light)]"/>
+                {gh.graphTitle[lang]}
               </div>
-              <div>
-                <span className="text-2xl font-extrabold text-white">Fullstack & Backend</span>
-                <span className="text-xs text-slate-400 block font-sans">Fokus Utama Pengembang</span>
-              </div>
+              <span className="text-xs text-emerald-400 flex items-center gap-1.5 font-mono">
+                <span className="status-dot" style={{width:"6px",height:"6px"}}/> LIVE
+              </span>
             </div>
-
-            <div className="p-5 rounded-xl border border-slate-800 bg-[#0d1117] flex items-center gap-4 shadow-lg">
-              <div className="p-3 rounded-lg bg-cyan-400/10 border border-cyan-500/20 text-cyan-400">
-                <GitCommit className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-2xl font-extrabold text-white">Continuous Dev</span>
-                <span className="text-xs text-slate-400 block font-sans">Aktivitas Commit & Open Source</span>
-              </div>
+            <div className="overflow-x-auto flex justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="https://ghchart.rshah.org/6366f1/MohammadKevin" alt="GitHub Contribution"
+                className="max-w-full h-auto min-w-[600px] opacity-90"/>
             </div>
           </div>
 
-          {/* Contribution Heatmap Container */}
-          <div className="rounded-xl border border-slate-800 bg-[#0d1117] p-6 mb-10 shadow-xl">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
-                <GitBranch className="w-4 h-4 text-amber-400" />
-                <span>Peta Kontribusi Commit GitHub (Contribution Heatmap)</span>
-              </div>
-              <span className="text-[10px] text-emerald-400 font-mono">● LIVE ACTIVITY</span>
-            </div>
-            
-            {/* Heatmap Image Widget */}
-            <div className="overflow-x-auto py-2 flex justify-center">
-              <img
-                src="https://ghchart.rshah.org/451a03/MohammadKevin"
-                alt="MohammadKevin's GitHub Contribution Graph"
-                className="max-w-full h-auto min-w-[650px] filter contrast-125 brightness-110"
-              />
-            </div>
-          </div>
-
-          {/* GitHub Repositories Grid Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-white font-sans">Repositori GitHub Terbaru</h3>
-            <span className="text-xs text-slate-400 font-mono">Diperbarui secara otomatis via GitHub API</span>
-          </div>
-
+          <h3 className="text-base font-bold text-white mb-5 reveal">{gh.recentRepos[lang]}</h3>
           {githubLoading ? (
-            <div className="text-center py-12 bg-[#0d1117] rounded-xl border border-slate-800">
-              <p className="text-xs text-amber-400 animate-pulse">$ loading --github-repos...</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({length:6}).map((_,i) => <div key={i} className="card-flat rounded-2xl h-32 animate-pulse"/>)}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-              {githubRepos.slice(0, 6).map((repo) => (
-                <div
-                  key={repo.id}
-                  className="rounded-xl border border-slate-800 bg-[#0d1117] hover:border-amber-500/50 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between p-5 group h-full"
-                >
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-white font-bold text-sm group-hover:text-amber-400 transition-colors">
-                        <Code2 className="w-4 h-4 text-amber-400 shrink-0" />
-                        <span className="truncate max-w-[180px]">{repo.name}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {githubRepos.slice(0,6).map((repo, i) => (
+                <div key={repo.id} className={`card rounded-2xl p-5 flex flex-col justify-between gap-3 reveal reveal-delay-${Math.min(i+1,4)}`}>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 text-white font-semibold text-sm truncate">
+                        <Code2 className="w-4 h-4 text-[var(--accent-light)] shrink-0"/>
+                        <span className="truncate">{repo.name}</span>
                       </div>
-                      {repo.language && (
-                        <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-amber-400 font-mono">
-                          {repo.language}
-                        </span>
-                      )}
+                      {repo.language && <span className="tech-pill shrink-0">{repo.language}</span>}
                     </div>
-
-                    <p className="text-xs text-slate-400 font-sans leading-relaxed line-clamp-2 min-h-[2.5rem]">
-                      {repo.description || "Repositori proyek pengembangan backend / fullstack oleh Mohammad Kevin."}
+                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                      {repo.description || gh.defaultDesc[lang]}
                     </p>
                   </div>
-
-                  <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-800 text-xs">
-                    <div className="flex items-center gap-3 text-slate-400 text-[11px]">
-                      {repo.stars > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Star className="w-3.5 h-3.5 text-amber-400" />
-                          {repo.stars}
-                        </span>
-                      )}
-                      {repo.forks > 0 && (
-                        <span className="flex items-center gap-1">
-                          <GitFork className="w-3.5 h-3.5 text-slate-400" />
-                          {repo.forks}
-                        </span>
-                      )}
+                  <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
+                    <div className="flex items-center gap-3 text-slate-600">
+                      {repo.stars > 0 && <span className="flex items-center gap-1"><Star className="w-3 h-3 text-amber-400"/>{repo.stars}</span>}
+                      {repo.forks > 0 && <span className="flex items-center gap-1"><GitFork className="w-3 h-3"/>{repo.forks}</span>}
                     </div>
-
-                    <a
-                      href={repo.repoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] text-amber-400 hover:underline font-bold"
-                    >
-                      <span>Lihat Repo</span>
-                      <ExternalLink className="w-3 h-3" />
+                    <a href={repo.repoUrl} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-[var(--accent-light)] hover:underline font-semibold">
+                      {gh.view[lang]} <ArrowUpRight className="w-3 h-3"/>
                     </a>
                   </div>
                 </div>
               ))}
             </div>
           )}
-
         </div>
       </section>
 
+      {/* ══════════════ CERTIFICATES ══════════════ */}
+      <section id="certificates" className="relative z-10 py-24 border-t border-white/5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
 
-      {/* ================= CERTIFICATES & CREDENTIALS SECTION ================= */}
-      <section id="certificates" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-            <div>
-              <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest mb-1">
-                <Award className="w-4 h-4" />
-                <span>$ cat /sys/credentials --verified</span>
-              </div>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
-                Sertifikasi & Kredensial Professional
-              </h2>
-            </div>
+          <div className="mb-12 reveal">
+            <div className="section-label mb-4">{ce.label[lang]}</div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+              {ce.heading[lang]} <span className="accent-word">{ce.headingAccent[lang]}</span>
+            </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {certificatesList.map((cert) => (
-              <div
-                key={cert.id}
-                className="rounded-xl border border-slate-800 bg-[#0d1117] hover:border-amber-500/40 transition-all duration-300 flex flex-col justify-between p-6 shadow-xl group"
-              >
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">
-                      {cert.category}
-                    </span>
-                    <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                      {cert.date}
-                    </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {certs.map((cert, i) => (
+              <div key={cert.id} className={`card rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden reveal reveal-delay-${Math.min(i+1,4)}`}>
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-[var(--accent)] opacity-40"/>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-[var(--accent-light)] uppercase tracking-widest">{cert.category}</span>
+                  <span className="text-[10px] text-slate-600 font-mono flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3 text-emerald-400"/>{cert.date}
+                  </span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--accent-muted)] border border-[var(--accent-border)] flex items-center justify-center shrink-0">
+                    <Award className="w-5 h-5 text-[var(--accent-light)]"/>
                   </div>
-
-                  <h3 className="text-base font-bold text-white font-sans group-hover:text-amber-400 transition-colors">
-                    {cert.title}
-                  </h3>
-
-                  <p className="text-xs text-slate-400 font-sans">
-                    {cert.issuer}
-                  </p>
-
-                  <div className="flex flex-wrap gap-1.5 pt-2">
-                    {Array.isArray(cert.skills) && cert.skills.map((s: string) => (
-                      <span key={s} className="text-[10px] text-slate-300 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded font-mono">
-                        {s}
-                      </span>
-                    ))}
+                  <div>
+                    <h3 className="text-sm font-bold text-white leading-snug">
+                      {typeof cert.title === "string" ? cert.title : cert.title?.[lang] || ""}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {typeof cert.issuer === "string" ? cert.issuer : cert.issuer?.[lang] || ""}
+                    </p>
                   </div>
                 </div>
-
-                {cert.credentialUrl && (
-                  <div className="mt-6 pt-4 border-t border-slate-800">
-                    <a
-                      href={cert.credentialUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:underline font-bold"
-                    >
-                      <span>Verifikasi Kredensial</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
+                <div className="flex flex-wrap gap-1.5">
+                  {Array.isArray(cert.skills) && cert.skills.map((s:string) => (
+                    <span key={s} className="tech-pill">{s}</span>
+                  ))}
+                </div>
+                {cert.url && (
+                  <div className="pt-2 border-t border-white/5">
+                    <a href={cert.url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs text-[var(--accent-light)] hover:underline font-semibold">
+                      {ce.verify[lang]} <ExternalLink className="w-3 h-3"/>
                     </a>
                   </div>
                 )}
               </div>
             ))}
           </div>
-
         </div>
       </section>
 
+      {/* ══════════════ TIMELINE ══════════════ */}
+      <section id="timeline" className="relative z-10 py-24 border-t border-white/5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
 
-      {/* ================= TIMELINE / EXPERIENCE SECTION ================= */}
-      <section id="timeline" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex flex-col gap-2 mb-12">
-            <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest">
-              <Layers className="w-4 h-4" />
-              <span>$ git log --graph --oneline --timeline</span>
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
-              Timeline Pengalaman & Reamur Karir
+          <div className="mb-12 reveal">
+            <div className="section-label mb-4">{tl.label[lang]}</div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+              {tl.heading[lang]} <span className="accent-word">{tl.headingAccent[lang]}</span>
             </h2>
+            <p className="text-slate-500 text-sm mt-2 max-w-md">{tl.subtext[lang]}</p>
           </div>
 
           <div className="flex flex-col gap-6 relative">
-            
-            {/* Timeline Line */}
-            <div className="absolute left-4 sm:left-6 top-4 bottom-4 w-0.5 bg-slate-800 z-0" />
-
-            {timelineLogs.map((log) => (
-              <div
-                key={log.commitHash}
-                className="relative z-10 pl-10 sm:pl-14 flex flex-col gap-2 group"
-              >
-                {/* Node Commit Icon */}
-                <div className="absolute left-2.5 sm:left-4.5 top-1.5 w-3.5 h-3.5 rounded-full bg-slate-900 border-2 border-amber-400 group-hover:scale-125 transition-transform" />
-
-                <div className="rounded-xl border border-slate-800 bg-[#0d1117] p-5 sm:p-6 flex flex-col gap-3 shadow-lg">
-                  
-                  {/* Log Header */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-amber-400 font-bold text-xs">{log.commitHash}</span>
-                      <span className="text-slate-600">|</span>
-                      <span className="text-xs text-slate-300 font-bold font-sans">{log.title}</span>
+            <div className="timeline-line"/>
+            {timelineLogs.map((log, i) => (
+              <div key={log.id} className={`relative pl-12 sm:pl-14 reveal reveal-delay-${Math.min(i+1,3)}`}>
+                <div className="absolute left-3.5 top-5 flex items-center justify-center">
+                  <div className="timeline-dot"/>
+                </div>
+                <div className="card-flat rounded-2xl p-6 flex flex-col gap-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-mono text-[var(--accent-light)] mb-0.5">{log.id}</p>
+                      <h3 className="text-base font-bold text-white">{log.org}</h3>
+                      <p className="text-xs text-slate-600 font-mono mt-0.5">{log.role[lang]}</p>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-slate-400 font-mono">{log.period}</span>
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
-                        log.tag === "PRODUCTION"
-                          ? "bg-emerald-400/10 border-emerald-500/30 text-emerald-400"
-                          : "bg-blue-400/10 border-blue-500/30 text-blue-400"
-                      }`}>
-                        {log.tag}
-                      </span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-slate-500 font-mono">{log.year}</span>
+                      <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold border ${
+                        log.type === "academic"
+                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                          : "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                      }`}>{log.type}</span>
                     </div>
                   </div>
-
-                  {/* Summary & Achievements */}
-                  <p className="text-xs text-slate-300 font-sans leading-relaxed">
-                    {log.summary}
-                  </p>
-
-                  <ul className="flex flex-col gap-1.5 font-sans text-xs text-slate-400 mt-1">
-                    {log.achievements.map((ach, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-amber-400 font-mono font-bold text-[10px] mt-0.5">&gt;</span>
-                        <span>{ach}</span>
+                  <div className="callout text-sm">{log.summary[lang]}</div>
+                  <ul className="flex flex-col gap-2">
+                    {log.achievements.map((a, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5 text-sm text-slate-400">
+                        <ChevronRight className="w-4 h-4 text-[var(--accent-light)] shrink-0 mt-0.5"/>{a[lang]}
                       </li>
                     ))}
                   </ul>
-
-                  {/* Stack Badges */}
-                  <div className="flex flex-wrap gap-1.5 pt-2">
-                    {log.techStack.map((tech) => (
-                      <span key={tech} className="text-[10px] text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded">
-                        {tech}
-                      </span>
-                    ))}
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {log.tech?.map((t: string) => <span key={t} className="tech-pill">{t}</span>)}
                   </div>
-
                 </div>
               </div>
             ))}
-
           </div>
         </div>
       </section>
 
+      {/* ══════════════ CONTACT ══════════════ */}
+      <section id="contact" className="relative z-10 py-24 border-t border-white/5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
 
-      {/* ================= CONTACT SECTION ================= */}
-      <section id="contact" className="py-20 relative z-10 border-t border-slate-800/80 font-mono">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
-            {/* Left: Contact Info */}
-            <div className="lg:col-span-5 flex flex-col gap-6">
-              <div>
-                <div className="inline-flex items-center gap-2 text-xs text-amber-400 font-bold uppercase tracking-widest mb-1">
-                  <MessageSquare className="w-4 h-4" />
-                  <span>$ ./contact.sh</span>
+          <div className="text-center mb-14 reveal">
+            <div className="section-label mb-4 justify-center">{co.label[lang]}</div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-4">
+              {co.heading[lang]} <span className="accent-word">{co.headingAccent[lang]}</span>
+            </h2>
+            <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+              {co.subtext[lang]}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-2 flex flex-col gap-4 reveal">
+              <div className="card-flat rounded-2xl p-5 flex items-center gap-4">
+                <div className="photo-ring w-14 h-14 relative shrink-0">
+                  <Image src="/images/logo.png" alt="Kevin" fill sizes="56px" className="object-cover"/>
                 </div>
-                <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans tracking-tight">
-                  Hubungi Saya
-                </h2>
-                <p className="text-slate-400 text-xs sm:text-sm font-sans mt-2 leading-relaxed">
-                  Tertarik untuk bekerja sama membangun sistem POS, pengarsipan digital, atau integrasi API backend? Kirim pesan langsung via terminal ini atau melalui kontak sosial berikut.
-                </p>
+                <div>
+                  <p className="font-bold text-white">Mohammad Kevin</p>
+                  <p className="text-sm text-[var(--accent-light)]">{co.role[lang]}</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="status-dot" style={{width:"6px",height:"6px"}}/>
+                    <span className="text-xs text-slate-500">{co.openNew[lang]}</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Direct Channels */}
-              <div className="flex flex-col gap-3 font-mono text-xs">
-                
-                {/* Email */}
-                <div className="p-3.5 rounded bg-[#0d1117] border border-slate-800 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Mail className="w-4 h-4 text-amber-400" />
-                    <div>
-                      <span className="text-[10px] text-slate-500 block">EMAIL:</span>
-                      <a href="mailto:kvn4.200581@gmail.com" className="text-white hover:text-amber-400 font-bold">
-                        kvn4.200581@gmail.com
-                      </a>
-                    </div>
-                  </div>
-                  <button
-                    onClick={copyEmailToClipboard}
-                    className="p-1.5 rounded bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-400 focus-visible:ring-1 focus-visible:ring-amber-400"
-                    title="Salin Email"
-                  >
-                    {copiedEmail ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
-
-                {/* WhatsApp */}
-                <a
-                  href="https://wa.me/6282131588846"
-                  target="_blank"
+              {/* Contact links */}
+              {[
+                {
+                  label: co.labelEmail[lang], value: "kvn4.200581@gmail.com",
+                  href: "mailto:kvn4.200581@gmail.com",
+                  icon: <Mail className="w-4 h-4 text-[var(--accent-light)]"/>,
+                  extra: (
+                    <button onClick={copyEmail} className="text-slate-600 hover:text-white transition-colors p-1">
+                      {copiedEmail ? <Check className="w-4 h-4 text-emerald-400"/> : <Copy className="w-4 h-4"/>}
+                    </button>
+                  ),
+                },
+                {
+                  label: co.labelWA[lang], value: "+62 821-3158-8846",
+                  href: "https://wa.me/6282131588846",
+                  icon: <Phone className="w-4 h-4 text-emerald-400"/>,
+                  cta: co.chatArrow[lang], ctaColor: "text-emerald-400",
+                },
+                {
+                  label: co.labelLI[lang], value: "mohammad-kevin-arif-rudianto",
+                  href: "https://linkedin.com/in/mohammad-kevin-arif-rudianto-945733347",
+                  icon: (
+                    <svg className="w-4 h-4 text-sky-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                  ),
+                  cta: co.connectArrow[lang], ctaColor: "text-sky-400",
+                },
+              ].map(c => (
+                <a key={c.label} href={c.href}
+                  target={c.href.startsWith("mailto:") ? undefined : "_blank"}
                   rel="noopener noreferrer"
-                  className="p-3.5 rounded bg-[#0d1117] border border-slate-800 hover:border-emerald-500/40 flex items-center justify-between transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Phone className="w-4 h-4 text-emerald-400" />
-                    <div>
-                      <span className="text-[10px] text-slate-500 block">WHATSAPP:</span>
-                      <span className="text-white font-bold">+62 821-3158-8846</span>
-                    </div>
+                  className="card-flat rounded-xl p-4 flex items-center gap-3
+                    border border-white/5 hover:border-[var(--accent-border)] transition-all group">
+                  {c.icon}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-slate-600 uppercase font-bold tracking-wider">{c.label}</p>
+                    <p className="text-sm text-white font-medium truncate group-hover:text-[var(--accent-light)] transition-colors">{c.value}</p>
                   </div>
-                  <span className="text-emerald-400 font-bold text-xs">&gt; Send WA</span>
+                  {c.extra || (c.cta && <span className={`text-xs font-bold shrink-0 ${c.ctaColor}`}>{c.cta}</span>)}
                 </a>
-
-                {/* LinkedIn */}
-                <a
-                  href="https://linkedin.com/in/mohammad-kevin-arif-rudianto-945733347"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-3.5 rounded bg-[#0d1117] border border-slate-800 hover:border-cyan-500/40 flex items-center justify-between transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <UserCheck className="w-4 h-4 text-cyan-400" />
-                    <div>
-                      <span className="text-[10px] text-slate-500 block">LINKEDIN:</span>
-                      <span className="text-white font-bold">mohammad-kevin-arif-rudianto</span>
-                    </div>
-                  </div>
-                  <span className="text-cyan-400 font-bold text-xs">&gt; Connect</span>
-                </a>
-
-              </div>
+              ))}
             </div>
 
-            {/* Right: Terminal Form */}
-            <div className="lg:col-span-7 rounded-xl border border-slate-800 bg-[#0d1117] p-6 sm:p-8 shadow-2xl">
-              
-              <div className="pb-4 border-b border-slate-800 flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs font-bold text-white">EXECUTE: ./send-message.py</span>
-                </div>
-                <span className="text-[10px] text-slate-500 uppercase">INTERACTIVE STDIN</span>
-              </div>
+            {/* Form */}
+            <div className="lg:col-span-3 card-flat rounded-2xl p-7 reveal reveal-delay-2">
+              <h3 className="font-bold text-white mb-1.5 flex items-center gap-2">
+                <Send className="w-4 h-4 text-[var(--accent-light)]"/>{co.formTitle[lang]}
+              </h3>
+              <p className="text-slate-500 text-xs mb-6">{co.formSubtext[lang]}</p>
 
-              <form onSubmit={handleFormSubmit} className="flex flex-col gap-4 font-mono text-xs">
-                
-                <div>
-                  <label className="text-[11px] text-amber-400 font-bold block mb-1.5">
-                    $ set INPUT_NAME =
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Nama Lengkap Anda..."
-                    className="w-full px-4 py-2.5 rounded bg-slate-950 border border-slate-800 focus:outline-none focus:border-amber-400 text-white font-sans text-xs"
-                    required
-                  />
-                </div>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                {[
+                  { id:"contact-name",  label: co.fieldName[lang],  name:"name",  type:"text",  ph: co.phName[lang] },
+                  { id:"contact-email", label: co.fieldEmail[lang],  name:"email", type:"email", ph: co.phEmail[lang] },
+                ].map(f => (
+                  <div key={f.name}>
+                    <label className="text-xs text-slate-500 font-semibold block mb-1.5">{f.label}</label>
+                    <input
+                      id={f.id} type={f.type} name={f.name}
+                      value={form[f.name as keyof typeof form]} onChange={handleChange}
+                      placeholder={f.ph}
+                      className="w-full px-4 py-3 rounded-xl bg-[#060912] border border-white/8
+                        focus:outline-none focus:border-[var(--accent-border)]
+                        text-white text-sm placeholder-slate-700 transition-all"
+                      required
+                    />
+                  </div>
+                ))}
 
                 <div>
-                  <label className="text-[11px] text-amber-400 font-bold block mb-1.5">
-                    $ set INPUT_EMAIL =
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="email@domain.com..."
-                    className="w-full px-4 py-2.5 rounded bg-slate-950 border border-slate-800 focus:outline-none focus:border-amber-400 text-white font-sans text-xs"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[11px] text-amber-400 font-bold block mb-1.5">
-                    $ set INPUT_MESSAGE =
-                  </label>
+                  <label className="text-xs text-slate-500 font-semibold block mb-1.5">{co.fieldMsg[lang]}</label>
                   <textarea
-                    name="message"
-                    rows={4}
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    placeholder="Jelaskan kebutuhan proyek atau pertanyaan Anda..."
-                    className="w-full px-4 py-2.5 rounded bg-slate-950 border border-slate-800 focus:outline-none focus:border-amber-400 text-white font-sans text-xs resize-none"
+                    id="contact-message" name="message" rows={5}
+                    value={form.message} onChange={handleChange}
+                    placeholder={co.phMsg[lang]}
+                    className="w-full px-4 py-3 rounded-xl bg-[#060912] border border-white/8
+                      focus:outline-none focus:border-[var(--accent-border)]
+                      text-white text-sm placeholder-slate-700 transition-all resize-none"
                     required
                   />
                 </div>
 
-                {/* Status Alerts */}
                 {formStatus === "error" && (
-                  <div className="p-3.5 rounded bg-rose-950/40 border border-rose-800/80 text-rose-300 text-xs flex flex-col gap-3">
+                  <div className="p-4 rounded-xl bg-rose-500/6 border border-rose-500/18 text-rose-300 text-sm flex flex-col gap-3">
                     <div className="flex items-center gap-2">
-                      <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                      <span>{errorMessage}</span>
+                      <XCircle className="w-4 h-4 shrink-0"/>{errorMsg}
                     </div>
-                    {formData.name && formData.message && (
-                      <div className="flex flex-wrap gap-2 pt-2 border-t border-rose-900/60">
-                        <a
-                          href={`https://wa.me/6282131588846?text=${encodeURIComponent(
-                            `Halo Kevin, saya ${formData.name} (${formData.email}):\n\n${formData.message}`
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center gap-1.5 transition-colors"
-                        >
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>Kirim Langsung via WA</span>
+                    {form.name && form.message && (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        <a href={`https://wa.me/6282131588846?text=${encodeURIComponent(`Halo Kevin, saya ${form.name}:\n\n${form.message}`)}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="btn-ghost text-xs px-3 py-1.5 rounded-lg text-emerald-300">
+                          <Phone className="w-3.5 h-3.5"/>{co.viaWA[lang]}
                         </a>
-                        <a
-                          href={`mailto:kvn4.200581@gmail.com?subject=${encodeURIComponent(
-                            `Pesan Portofolio dari ${formData.name}`
-                          )}&body=${encodeURIComponent(
-                            `Nama: ${formData.name}\nEmail: ${formData.email}\n\nPesan:\n${formData.message}`
-                          )}`}
-                          className="px-3 py-1.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-[11px] flex items-center gap-1.5 transition-colors"
-                        >
-                          <Mail className="w-3.5 h-3.5" />
-                          <span>Kirim Langsung via Email</span>
+                        <a href={`mailto:kvn4.200581@gmail.com?subject=Pesan dari ${form.name}&body=${encodeURIComponent(form.message)}`}
+                          className="btn-ghost text-xs px-3 py-1.5 rounded-lg text-[var(--accent-light)]">
+                          <Mail className="w-3.5 h-3.5"/>{co.viaEmail[lang]}
                         </a>
                       </div>
                     )}
@@ -1177,97 +884,89 @@ export default function Home() {
                 )}
 
                 {formStatus === "success" && (
-                  <div className="p-3 rounded bg-emerald-950/40 border border-emerald-800/80 text-emerald-300 text-xs flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Pesan berhasil terkirim! Saya akan segera merespons email Anda.</span>
+                  <div className="p-4 rounded-xl bg-emerald-500/6 border border-emerald-500/18 text-emerald-300 text-sm flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5"/>
+                    <span>{co.successMsg[lang]}</span>
                   </div>
                 )}
 
                 <button
-                  type="submit"
+                  id="contact-submit" type="submit"
                   disabled={formStatus === "loading"}
-                  className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-amber-500/10 focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50"
+                  className="btn-accent w-full justify-center py-3.5 rounded-xl text-sm disabled:opacity-50"
                 >
                   {formStatus === "loading" ? (
-                    <span>[RUNNING SYSTEM SCRIPT...]</span>
+                    <span className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"/>
+                      {co.sending[lang]}
+                    </span>
                   ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      <span>$ ./send-message.py --submit</span>
-                    </>
+                    <><Send className="w-4 h-4"/>{co.sendBtn[lang]}</>
                   )}
                 </button>
-
               </form>
-
             </div>
-
           </div>
-
         </div>
       </section>
 
-      {/* ================= RESUME / CV DOWNLOAD MODAL ================= */}
-      {isResumeModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in font-mono">
-          <div className="bg-[#0d1117] border border-slate-800 rounded-xl max-w-2xl w-full overflow-hidden shadow-2xl">
-            
-            {/* Modal Header */}
-            <div className="px-5 py-3.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
-                <FileText className="w-4 h-4 text-amber-400" />
-                <span>$ cat /usr/kevin/resume.pdf</span>
+      {/* ══════════════ CV MODAL ══════════════ */}
+      {resumeOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm"
+          onClick={e => e.target === e.currentTarget && setResumeOpen(false)}
+        >
+          <div className="card-flat rounded-2xl max-w-md w-full border border-white/10 shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[var(--accent-muted)] border border-[var(--accent-border)] flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-[var(--accent-light)]"/>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white">{cv.title[lang]}</p>
+                  <p className="text-[10px] text-slate-600">Mohammad Kevin Arif Rudianto</p>
+                </div>
               </div>
-              <button
-                onClick={() => setIsResumeModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer"
-              >
-                <XCircle className="w-5 h-5" />
+              <button onClick={() => setResumeOpen(false)}
+                className="text-slate-500 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/5">
+                <XCircle className="w-5 h-5"/>
               </button>
             </div>
 
-            {/* Modal Content Body */}
-            <div className="p-6 flex flex-col gap-6 text-xs text-slate-300 font-sans leading-relaxed">
-              
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-slate-950 border border-slate-800 font-mono">
-                <div>
-                  <h3 className="text-base font-bold text-white font-sans">Mohammad Kevin Arif Rudianto</h3>
-                  <p className="text-xs text-amber-400 font-mono mt-0.5">Backend & Fullstack Developer | SMK Telkom Malang</p>
+            <div className="p-6 flex flex-col gap-5">
+              <div className="flex items-center gap-4">
+                <div className="photo-ring w-14 h-14 relative shrink-0">
+                  <Image src="/images/logo.png" alt="Kevin" fill sizes="56px" className="object-cover"/>
                 </div>
-                <a
-                  href="/CV%20Mohammad%20Kevin.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <div>
+                  <p className="font-bold text-white">Mohammad Kevin Arif Rudianto</p>
+                  <p className="text-sm text-[var(--accent-light)]">{cv.role[lang]}</p>
+                  <p className="text-xs text-slate-600 mt-0.5">{cv.school[lang]}</p>
+                </div>
+              </div>
+
+              <div className="divider"/>
+
+              <div className="flex flex-col gap-2.5">
+                {[cv.item1[lang], cv.item2[lang], cv.item3[lang], cv.item4[lang]].map((item, i) => (
+                  <div key={i} className="flex items-start gap-2.5 text-sm text-slate-400">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"/>{item}
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-1">
+                <a href="/CV%20Mohammad%20Kevin.pdf" target="_blank" rel="noopener noreferrer"
                   download="CV Mohammad Kevin.pdf"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-[var(--primary)] text-slate-950 font-bold text-xs transition-all shadow-md focus-visible:ring-2 focus-visible:ring-white shrink-0 hover:brightness-110"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download PDF</span>
+                  className="btn-accent flex-1 justify-center text-sm py-2.5 rounded-xl">
+                  <Download className="w-4 h-4"/>{cv.downloadBtn[lang]}
+                </a>
+                <a href="#contact" onClick={() => setResumeOpen(false)}
+                  className="btn-ghost flex-1 justify-center text-sm py-2.5 rounded-xl">
+                  {cv.contactBtn[lang]}
                 </a>
               </div>
-
-              <div className="flex flex-col gap-3 text-xs">
-                <h4 className="text-sm font-bold text-white font-sans flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Ringkasan Kualifikasi Utama</span>
-                </h4>
-                <ul className="list-disc list-inside space-y-1.5 text-slate-300 pl-1 font-sans">
-                  <li>2+ tahun pengalaman intensif membangun RESTful API & arsitektur sistem backend.</li>
-                  <li>Menguasai Next.js, NestJS, Express.js, Prisma ORM, PostgreSQL, dan MySQL.</li>
-                  <li>Spesialisasi dalam pengarsipan dokumen digital, sistem kasir (POS), dan optimasi query database.</li>
-                  <li>Siswa SMK Telkom Malang dengan rekam jejak pengerjaan proyek real-world terstruktur.</li>
-                </ul>
-              </div>
-
-              <div className="p-4 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono flex items-center justify-between">
-                <span className="text-slate-400">Hubungi langsung untuk penawaran proyek / karir:</span>
-                <a href="#contact" onClick={() => setIsResumeModalOpen(false)} className="text-amber-400 font-bold hover:underline">
-                  $ ./contact.sh &rarr;
-                </a>
-              </div>
-
             </div>
-
           </div>
         </div>
       )}

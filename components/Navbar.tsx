@@ -2,201 +2,262 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-
-const navItems = [
-  { label: "./hero", href: "#hero" },
-  { label: "./whoami", href: "#whoami" },
-  { label: "./stack", href: "#stack" },
-  { label: "./projects", href: "#projects" },
-  { label: "./github", href: "#github" },
-  { label: "./certificates", href: "#certificates" },
-  { label: "./timeline", href: "#timeline" },
-  { label: "./contact", href: "#contact" },
-];
+import { Menu, X, Palette } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/data/translations";
 
 const themes = [
-  { name: "amber", label: "Amber CRT", color: "bg-amber-400" },
-  { name: "cyan", label: "Cyan CLI", color: "bg-cyan-400" },
-  { name: "emerald", label: "Emerald Matrix", color: "bg-emerald-400" },
+  { id: "indigo",  label: "Indigo",  color: "#6366f1" },
+  { id: "rose",    label: "Rose",    color: "#f43f5e" },
+  { id: "amber",   label: "Amber",   color: "#f59e0b" },
+  { id: "emerald", label: "Emerald", color: "#10b981" },
+  { id: "cyan",    label: "Cyan",    color: "#06b6d4" },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState("hero");
-  const [currentTheme, setCurrentTheme] = useState("amber");
+  const { lang, setLang } = useLanguage();
 
-  if (pathname && pathname.startsWith("/admin")) {
-    return null;
-  }
+  const [menuOpen,  setMenuOpen]  = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [scrolled,  setScrolled]  = useState(false);
+  const [activeSection, setActiveSection] = useState("hero");
+  const [currentTheme,  setCurrentTheme]  = useState("indigo");
+
+  const n = translations.nav;
+
+  const navItems = [
+    { label: n.home[lang],     href: "#hero"         },
+    { label: n.about[lang],    href: "#whoami"        },
+    { label: n.skills[lang],   href: "#stack"         },
+    { label: n.projects[lang], href: "#projects"      },
+    { label: n.github[lang],   href: "#github"        },
+    { label: n.certs[lang],    href: "#certificates"  },
+    { label: n.timeline[lang], href: "#timeline"      },
+    { label: n.contact[lang],  href: "#contact"       },
+  ];
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("kevin-portfolio-theme") || "amber";
-    setCurrentTheme(savedTheme);
-    document.documentElement.setAttribute("data-theme", savedTheme);
+    const saved = localStorage.getItem("kv-theme") || "indigo";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCurrentTheme(saved);
+    document.documentElement.setAttribute("data-theme", saved);
 
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-
-      const sections = navItems.map((item) => item.href.replace("#", ""));
-      for (const section of sections.reverse()) {
-        const el = document.getElementById(section);
-        if (el && window.scrollY >= el.offsetTop - 140) {
-          setActiveSection(section);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 30);
+      const ids = ["hero","whoami","stack","projects","github","certificates","timeline","contact"];
+      for (const id of [...ids].reverse()) {
+        const el = document.getElementById(id);
+        if (el && window.scrollY >= el.offsetTop - 160) {
+          setActiveSection(id);
           break;
         }
       }
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const changeTheme = (themeName: string) => {
-    setCurrentTheme(themeName);
-    localStorage.setItem("kevin-portfolio-theme", themeName);
-    document.documentElement.setAttribute("data-theme", themeName);
+  const applyTheme = (id: string) => {
+    setCurrentTheme(id);
+    localStorage.setItem("kv-theme", id);
+    document.documentElement.setAttribute("data-theme", id);
+    setThemeOpen(false);
   };
 
+  if (pathname && pathname.startsWith("/admin")) return null;
+
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-3 max-w-7xl mx-auto font-mono">
-      <nav
-        className={`w-full rounded-xl border border-slate-800 bg-[#0d1117]/90 backdrop-blur-md transition-all duration-300 px-4 sm:px-6 ${
-          scrolled ? "py-2.5 shadow-2xl shadow-black/80 border-slate-700" : "py-3"
-        }`}
-      >
-        <div className="flex items-center justify-between">
-          
-          <Link href="/" className="flex items-center gap-2.5 group focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1">
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-900 border border-slate-800 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[var(--primary)] font-bold transition-colors">kevin@dev:~$</span>
-            </div>
-            <span className="hidden sm:inline-block text-xs font-semibold text-slate-300 group-hover:text-[var(--primary)] transition-colors">
-              sys.profile
-            </span>
-          </Link>
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-[#080f1e]/95 backdrop-blur-md border-b border-white/6 shadow-xl shadow-black/30"
+          : "bg-transparent"
+      }`}
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
 
-
-          <ul className="hidden md:flex items-center gap-1 list-none m-0 p-0">
-            {navItems.map((item) => {
-              const secId = item.href.replace("#", "");
-              const isActive = activeSection === secId;
-              return (
-                <li key={item.label}>
-                  <a
-                    href={item.href}
-                    className={`px-3 py-1.5 text-xs font-mono rounded transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary ${
-                      isActive
-                        ? "text-[var(--primary)] bg-[var(--primary)]/10 border border-[var(--primary)]/30 font-bold shadow-sm"
-                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent"
-                    }`}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-
-
-          <div className="hidden md:flex items-center gap-4">
-            
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-900 border border-slate-800 rounded">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider mr-1">THEME:</span>
-              {themes.map((t) => (
-                <button
-                  key={t.name}
-                  onClick={() => changeTheme(t.name)}
-                  title={`Tema ${t.label}`}
-                  className={`w-3.5 h-3.5 rounded-sm ${t.color} cursor-pointer transition-transform hover:scale-125 focus-visible:ring-1 focus-visible:ring-white ${
-                    currentTheme === t.name ? "ring-2 ring-white scale-110" : "opacity-50 hover:opacity-100"
-                  }`}
-                />
-              ))}
-            </div>
-
-            <a
-              href="#contact"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[var(--primary)] text-slate-950 text-xs font-bold rounded shadow-md hover:brightness-110 transition-all focus-visible:ring-2 focus-visible:ring-white"
-            >
-              <span>$ ./contact.sh</span>
-            </a>
+        {/* ── Brand ─────────────────────────── */}
+        <Link href="/" id="navbar-brand" className="flex items-center gap-2.5 group">
+          <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20
+            group-hover:border-[var(--accent-border)] transition-all">
+            <Image
+              src="/images/logo.png"
+              alt="Kevin"
+              width={32}
+              height={32}
+              className="object-cover"
+            />
           </div>
+          <span className="text-sm font-semibold text-white/80 group-hover:text-white transition-colors hidden sm:block">
+            Mohammad Kevin
+          </span>
+        </Link>
 
+        {/* ── Desktop Nav ─────────────────── */}
+        <nav className="hidden md:flex items-center gap-0.5">
+          {navItems.map((item) => {
+            const id = item.href.replace("#", "");
+            const active = activeSection === id;
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                  active
+                    ? "text-[var(--accent-light)] bg-[var(--accent-muted)]"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                {item.label}
+              </a>
+            );
+          })}
+        </nav>
 
-          <div className="flex md:hidden">
+        {/* ── Right Controls ──────────────── */}
+        <div className="flex items-center gap-1.5">
+
+          {/* ── Language Toggle ──── */}
+          <button
+            id="lang-toggle-btn"
+            onClick={() => setLang(lang === "id" ? "en" : "id")}
+            title={lang === "id" ? "Switch to English" : "Ganti ke Indonesia"}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+              border border-white/10 hover:border-[var(--accent-border)]
+              hover:bg-[var(--accent-muted)] transition-all duration-200 group"
+            aria-label="Toggle language"
+          >
+            {lang === "id" ? (
+              <>
+                <span className="text-base leading-none">🇮🇩</span>
+                <span className="text-xs font-bold text-slate-400 group-hover:text-[var(--accent-light)] transition-colors">
+                  ID
+                </span>
+                <span className="text-slate-700 text-xs">/</span>
+                <span className="text-xs text-slate-600 group-hover:text-slate-400 transition-colors">EN</span>
+              </>
+            ) : (
+              <>
+                <span className="text-base leading-none">🇬🇧</span>
+                <span className="text-xs font-bold text-slate-400 group-hover:text-[var(--accent-light)] transition-colors">
+                  EN
+                </span>
+                <span className="text-slate-700 text-xs">/</span>
+                <span className="text-xs text-slate-600 group-hover:text-slate-400 transition-colors">ID</span>
+              </>
+            )}
+          </button>
+
+          {/* ── Theme Switcher ───── */}
+          <div className="relative">
             <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white focus-visible:ring-2 focus-visible:ring-primary"
-              aria-label="Toggle menu"
+              id="theme-toggle-btn"
+              onClick={() => setThemeOpen(!themeOpen)}
+              title="Ganti tema warna"
+              className="p-2 rounded-lg text-slate-500 hover:text-white hover:bg-white/5
+                transition-all border border-transparent hover:border-white/10"
+              aria-label="Theme switcher"
             >
-              {menuOpen ? (
-                <svg className="w-5 h-5 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
+              <Palette className="w-4 h-4" />
             </button>
-          </div>
-        </div>
 
-        {menuOpen && (
-          <div className="md:hidden mt-3 pt-3 border-t border-slate-800 flex flex-col gap-2 pb-2">
-            {navItems.map((item) => {
-              const secId = item.href.replace("#", "");
-              const isActive = activeSection === secId;
-              return (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  className={`px-3 py-2 text-xs font-mono rounded transition-colors ${
-                    isActive
-                      ? "text-[var(--primary)] bg-[var(--primary)]/10 border border-[var(--primary)]/30 font-bold"
-                      : "text-slate-300 hover:bg-slate-800/60"
-                  }`}
-                >
-                  {item.label}
-                </a>
-              );
-            })}
-
-            <div className="border-t border-slate-800 mt-2 pt-3 flex flex-col gap-3">
-              <div className="flex items-center justify-between px-1">
-                <span className="text-[10px] text-slate-400 uppercase tracking-widest">CLI Theme:</span>
-                <div className="flex items-center gap-2">
+            {themeOpen && (
+              <div
+                id="theme-panel"
+                className="absolute right-0 top-full mt-2 card-flat p-3 flex flex-col gap-2 min-w-[160px] shadow-2xl shadow-black/50 border border-white/8"
+              >
+                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider px-1">
+                  {n.themeLabel[lang]}
+                </p>
+                <div className="flex flex-col gap-0.5">
                   {themes.map((t) => (
                     <button
-                      key={t.name}
-                      onClick={() => changeTheme(t.name)}
-                      className={`px-2.5 py-1 rounded text-[10px] font-mono border transition-all ${
-                        currentTheme === t.name
-                          ? "bg-slate-800 border-[var(--primary)] text-[var(--primary)]"
-                          : "border-slate-800 text-slate-400"
+                      key={t.id}
+                      id={`theme-${t.id}`}
+                      onClick={() => applyTheme(t.id)}
+                      className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm
+                        transition-all cursor-pointer text-left ${
+                        currentTheme === t.id
+                          ? "bg-white/8 text-white"
+                          : "text-slate-400 hover:bg-white/5 hover:text-white"
                       }`}
                     >
-                      {t.name}
+                      <span
+                        className="w-3.5 h-3.5 rounded-full shrink-0 border border-white/20"
+                        style={{ background: t.color }}
+                      />
+                      {t.label}
+                      {currentTheme === t.id && (
+                        <span className="ml-auto text-[10px] text-[var(--accent-light)]">✓</span>
+                      )}
                     </button>
                   ))}
                 </div>
               </div>
-
-              <a
-                href="#contact"
-                onClick={() => setMenuOpen(false)}
-                className="w-full py-2 bg-[var(--primary)] text-slate-950 text-xs font-bold rounded text-center"
-              >
-                $ ./contact.sh
-              </a>
-            </div>
+            )}
           </div>
-        )}
-      </nav>
-    </div>
+
+          {/* ── Hire Me CTA ────── */}
+          <a
+            href="#contact"
+            id="navbar-cta"
+            className="hidden md:inline-flex btn-accent text-sm px-4 py-2 rounded-lg"
+          >
+            {n.hireMe[lang]}
+          </a>
+
+          {/* ── Mobile Menu Toggle ── */}
+          <button
+            id="mobile-menu-btn"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 border border-white/8 transition-all"
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Mobile Menu ─────────────────── */}
+      {menuOpen && (
+        <div className="md:hidden mx-3 mb-3 card-flat p-3 flex flex-col gap-1 border border-white/8">
+          {navItems.map((item) => {
+            const id = item.href.replace("#", "");
+            const active = activeSection === id;
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  active
+                    ? "text-[var(--accent-light)] bg-[var(--accent-muted)]"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                {item.label}
+              </a>
+            );
+          })}
+          <div className="mt-1 pt-2 border-t border-white/6">
+            <a
+              href="#contact"
+              onClick={() => setMenuOpen(false)}
+              className="btn-accent w-full justify-center text-sm py-2.5 rounded-lg"
+            >
+              {n.hireMe[lang]}
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Close theme panel on outside click */}
+      {themeOpen && (
+        <div className="fixed inset-0 z-[-1]" onClick={() => setThemeOpen(false)} />
+      )}
+    </header>
   );
 }

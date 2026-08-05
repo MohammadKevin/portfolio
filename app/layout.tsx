@@ -3,6 +3,7 @@ import { JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -18,7 +19,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Mohammad Kevin | Backend & Fullstack Developer",
-  description: "Portfolio of Mohammad Kevin, Fullstack & Backend Developer based in Malang, Indonesia. Specializing in Next.js, NestJS, Express, Prisma, PostgreSQL, and MySQL.",
+  description:
+    "Portfolio of Mohammad Kevin, Fullstack & Backend Developer based in Malang, Indonesia. Specializing in Next.js, NestJS, Express, Prisma, PostgreSQL, and MySQL.",
   keywords: [
     "Mohammad Kevin",
     "Backend Developer",
@@ -31,7 +33,7 @@ export const metadata: Metadata = {
     "Prisma ORM",
     "PostgreSQL",
     "MySQL",
-    "Terminal Portfolio"
+    "Terminal Portfolio",
   ].join(", "),
 };
 
@@ -41,27 +43,35 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" suppressHydrationWarning className={`scroll-smooth ${jetbrainsMono.variable} ${inter.variable}`}>
+    <html
+      lang="id"
+      suppressHydrationWarning
+      className={`scroll-smooth ${jetbrainsMono.variable} ${inter.variable}`}
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
-                  const savedTheme = localStorage.getItem('kevin-portfolio-theme') || 'amber';
-                  document.documentElement.setAttribute('data-theme', savedTheme);
+                  const t = localStorage.getItem('kv-theme') || 'indigo';
+                  document.documentElement.setAttribute('data-theme', t);
                 } catch (e) {}
               })();
             `,
           }}
         />
       </head>
-      <body suppressHydrationWarning className="antialiased bg-background text-slate-300 min-h-screen font-sans selection:bg-amber-400/20 selection:text-amber-300 transition-colors duration-500">
-        <Navbar />
-        {children}
-        <Footer />
+      <body
+        suppressHydrationWarning
+        className="antialiased bg-[#080f1e] text-slate-300 min-h-screen font-sans"
+      >
+        <LanguageProvider>
+          <Navbar />
+          {children}
+          <Footer />
+        </LanguageProvider>
       </body>
     </html>
   );
 }
-

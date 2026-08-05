@@ -27,6 +27,7 @@ export default function Analytics() {
   useEffect(() => {
 
     if (sessionStorage.getItem("kevin-analytics-auth") === "true") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsAuthenticated(true);
     }
   }, []);
@@ -34,6 +35,7 @@ export default function Analytics() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch("/api/visit")
       .then((res) => res.json())

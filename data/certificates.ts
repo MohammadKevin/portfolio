@@ -1,40 +1,54 @@
+import type { LocalizedString } from "./projects";
+
 export interface Certificate {
   id: string;
-  title: string;
-  issuer: string;
+  category: string;
+  title: LocalizedString | string;
+  issuer: LocalizedString | string;
   date: string;
-  credentialUrl?: string;
-  image?: string;
-  skills: string[];
-  category: "Backend" | "Fullstack" | "Database" | "General";
+  url?: string;
+  skills?: string[];
 }
 
 export const certificatesData: Certificate[] = [
   {
     id: "cert-1",
-    title: "Backend Developer & RESTful API Engineering",
-    issuer: "SMK Telkom Malang / Industry Credential",
-    date: "2024",
-    credentialUrl: "https://github.com/MohammadKevin",
-    skills: ["Node.js", "Express.js", "PostgreSQL", "Prisma ORM"],
-    category: "Backend"
+    category: "Professional Certification",
+    title: { id: "Belajar Dasar Pemrograman Web", en: "Learn Web Programming Basics" },
+    issuer: { id: "Dicoding Indonesia", en: "Dicoding Indonesia" },
+    date: "2023",
+    url: "https://www.dicoding.com/certificates/NVP790V2RPR0"
   },
   {
     id: "cert-2",
-    title: "Fullstack Web Application Development",
-    issuer: "Kemendikbudristek / Vocational Certification",
-    date: "2024",
-    credentialUrl: "https://github.com/MohammadKevin",
-    skills: ["Next.js", "React.js", "MySQL", "Tailwind CSS"],
-    category: "Fullstack"
+    category: "Course",
+    title: { id: "Belajar Dasar Pemrograman JavaScript", en: "Learn JavaScript Programming Basics" },
+    issuer: { id: "Dicoding Indonesia", en: "Dicoding Indonesia" },
+    date: "2023",
+    url: "https://www.dicoding.com/certificates/6MQ26RVE8ZQG"
   },
   {
     id: "cert-3",
-    title: "Database Design & Performance Tuning",
-    issuer: "Developer Academy Certificate",
+    category: "Course",
+    title: { id: "Belajar Membuat Front-End Web untuk Pemula", en: "Learn to Build Web Front-End for Beginners" },
+    issuer: { id: "Dicoding Indonesia", en: "Dicoding Indonesia" },
     date: "2023",
-    credentialUrl: "https://github.com/MohammadKevin",
-    skills: ["PostgreSQL", "MySQL", "Indexing", "Query Optimization"],
-    category: "Database"
+    url: "https://www.dicoding.com/certificates/2VX3N0KDDZYQ"
+  },
+  {
+    id: "cert-4",
+    category: "Course",
+    title: { id: "Belajar Membuat Aplikasi Web dengan React", en: "Learn to Build Web Applications with React" },
+    issuer: { id: "Dicoding Indonesia", en: "Dicoding Indonesia" },
+    date: "2023",
+    url: "https://www.dicoding.com/certificates/81P28E7NWZOY"
+  },
+  {
+    id: "cert-5",
+    category: "Course",
+    title: { id: "Belajar Fundamental Aplikasi Web dengan React", en: "Learn Web Application Fundamentals with React" },
+    issuer: { id: "Dicoding Indonesia", en: "Dicoding Indonesia" },
+    date: "2023",
+    url: "https://www.dicoding.com/certificates/L4PQ4D7ERPO1"
   }
 ];

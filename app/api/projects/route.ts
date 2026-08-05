@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
@@ -18,9 +19,18 @@ const defaultProjects = [
     category: "Digital Archive System",
     type: "Fullstack",
     color: "from-amber-600 to-yellow-500",
-    desc: "Sistem pengarsipan dan manajemen dokumen digital terstruktur untuk organisasi dengan enkripsi berkas dan hak akses bertingkat.",
-    problem: "Pengarsipan fisik yang berantakan dan lambatnya pencarian dokumen administratif lama.",
-    impact: "Mempercepat waktu pencarian berkas dari hitungan jam menjadi kurun waktu < 3 detik dengan indeks metadata terstruktur.",
+    desc: {
+      id: "Sistem pengarsipan dan manajemen dokumen digital terstruktur untuk organisasi dengan enkripsi berkas dan hak akses bertingkat.",
+      en: "Structured digital document archiving and management system for organizations with file encryption and multi-level access rights."
+    },
+    problem: {
+      id: "Pengarsipan fisik yang berantakan dan lambatnya pencarian dokumen administratif lama.",
+      en: "Messy physical archiving and slow retrieval of old administrative documents."
+    },
+    impact: {
+      id: "Mempercepat waktu pencarian berkas dari hitungan jam menjadi kurun waktu < 3 detik dengan indeks metadata terstruktur.",
+      en: "Accelerated file retrieval time from hours to < 3 seconds with structured metadata indexing."
+    },
     tech: ["Next.js", "Express.js", "PostgreSQL", "Prisma", "Tailwind CSS"],
     demoUrl: "",
     repoUrl: "https://github.com/MohammadKevin/InvDocs-Archive"
@@ -31,9 +41,18 @@ const defaultProjects = [
     category: "Point of Sale System",
     type: "Fullstack",
     color: "from-emerald-600 to-teal-500",
-    desc: "Sistem kasir toko & UMKM dengan pencatatan transaksi real-time, cetak struk faktur, serta pembuatan laporan penjualan harian.",
-    problem: "Pencatatan kasir manual yang rawan selisih persediaan barang dan kesalahan kalkulasi kembalian.",
-    impact: "Menghilangkan selisih persediaan fisik dengan akurasi pemotongan stok otomatis 100% pada transaksi kasir.",
+    desc: {
+      id: "Sistem kasir toko & UMKM dengan pencatatan transaksi real-time, cetak struk faktur, serta pembuatan laporan penjualan harian.",
+      en: "POS system for shops & SMEs with real-time transaction logging, invoice receipt printing, and daily sales report generation."
+    },
+    problem: {
+      id: "Pencatatan kasir manual yang rawan selisih persediaan barang dan kesalahan kalkulasi kembalian.",
+      en: "Manual cashier recording prone to inventory discrepancies and change calculation errors."
+    },
+    impact: {
+      id: "Menghilangkan selisih persediaan fisik dengan akurasi pemotongan stok otomatis 100% pada transaksi kasir.",
+      en: "Eliminated physical inventory discrepancies with 100% automatic stock deduction accuracy on POS transactions."
+    },
     tech: ["React.js", "Express.js", "MySQL", "Prisma", "Tailwind CSS"],
     demoUrl: "",
     repoUrl: ""
@@ -44,9 +63,18 @@ const defaultProjects = [
     category: "Backend Engine",
     type: "Backend",
     color: "from-cyan-600 to-blue-500",
-    desc: "RESTful API high-throughput untuk pelacakan persediaan gudang, multi-warehouse batch logging, dan notifikasi stok kritis.",
-    problem: "Lambatnya query pencarian stok barang dalam jumlah puluhan ribu baris data pada sistem gudang lama.",
-    impact: "Mempercepat query pencarian persediaan sebesar 40% setelah penerapan database indexing dan Prisma query tuning.",
+    desc: {
+      id: "RESTful API high-throughput untuk pelacakan persediaan gudang, multi-warehouse batch logging, dan notifikasi stok kritis.",
+      en: "High-throughput RESTful API for warehouse inventory tracking, multi-warehouse batch logging, and critical stock notifications."
+    },
+    problem: {
+      id: "Lambatnya query pencarian stok barang dalam jumlah puluhan ribu baris data pada sistem gudang lama.",
+      en: "Slow item stock search queries across tens of thousands of data rows in the legacy warehouse system."
+    },
+    impact: {
+      id: "Mempercepat query pencarian persediaan sebesar 40% setelah penerapan database indexing dan Prisma query tuning.",
+      en: "Sped up inventory search queries by 40% after implementing database indexing and Prisma query tuning."
+    },
     tech: ["NestJS", "Node.js", "PostgreSQL", "Prisma", "Redis"],
     demoUrl: "",
     repoUrl: "https://github.com/MohammadKevin/inventory-backend-engine"
@@ -57,9 +85,18 @@ const defaultProjects = [
     category: "Web Application",
     type: "Fullstack",
     color: "from-blue-600 to-indigo-500",
-    desc: "Platform pengarsipan data publik dan catatan administratif sekolah/organisasi dengan proteksi otentikasi JWT.",
-    problem: "Kebutuhan publikasi data arsip terbuka yang tetap menjamin kerahasiaan berkas internal.",
-    impact: "Sistem berhasil menangani ribuan pengunduhan berkas dokumen publik dengan pengamanan akses granular.",
+    desc: {
+      id: "Platform pengarsipan data publik dan catatan administratif sekolah/organisasi dengan proteksi otentikasi JWT.",
+      en: "Public data archiving and school/organization administrative record platform with JWT authentication protection."
+    },
+    problem: {
+      id: "Kebutuhan publikasi data arsip terbuka yang tetap menjamin kerahasiaan berkas internal.",
+      en: "The need for open archive data publication while ensuring the confidentiality of internal files."
+    },
+    impact: {
+      id: "Sistem berhasil menangani ribuan pengunduhan berkas dokumen publik dengan pengamanan akses granular.",
+      en: "The system successfully handled thousands of public document file downloads with granular access security."
+    },
     tech: ["Next.js", "Tailwind CSS", "Prisma", "MySQL"],
     demoUrl: "",
     repoUrl: ""
@@ -70,9 +107,18 @@ const defaultProjects = [
     category: "System Interface",
     type: "Frontend",
     color: "from-purple-600 to-pink-500",
-    desc: "Website portofolio pribadi bertema IDE/Terminal developer tool dengan UI high-contrast, status diagnostics, dan system info viewer.",
-    problem: "Template portofolio SaaS generik yang tidak mencerminkan fokus arsitektur backend & system dev.",
-    impact: "Memberikan pengalaman visual unik bergaya system terminal dengan performa 100% Lighthouse score.",
+    desc: {
+      id: "Website portofolio pribadi bertema IDE/Terminal developer tool dengan UI high-contrast, status diagnostics, dan system info viewer.",
+      en: "Personal portfolio website with an IDE/Terminal developer tool theme featuring high-contrast UI, status diagnostics, and system info viewer."
+    },
+    problem: {
+      id: "Template portofolio SaaS generik yang tidak mencerminkan fokus arsitektur backend & system dev.",
+      en: "Generic SaaS portfolio templates that do not reflect the focus on backend architecture & system development."
+    },
+    impact: {
+      id: "Memberikan pengalaman visual unik bergaya system terminal dengan performa 100% Lighthouse score.",
+      en: "Provides a unique visual experience in a system terminal style with 100% Lighthouse performance score."
+    },
     tech: ["Next.js 16", "Tailwind CSS", "TypeScript"],
     demoUrl: "https://mohammadkevin.dev",
     repoUrl: "https://github.com/MohammadKevin/my-portfolio"
@@ -83,9 +129,18 @@ const defaultProjects = [
     category: "Admin Dashboard",
     type: "Frontend",
     color: "from-slate-700 to-slate-900",
-    desc: "Dashboard monitoring metrik data akademik sekolah, visualisasi keaktifan siswa, dan pengelolaan jadwal kegiatan.",
-    problem: "Visualisasi data akademis kompleks yang sulit dibaca oleh staf pengajar.",
-    impact: "Menyederhanakan pemantauan data akademik dengan waktu pemuatan widget dashboard under 1 detik.",
+    desc: {
+      id: "Dashboard monitoring metrik data akademik sekolah, visualisasi keaktifan siswa, dan pengelolaan jadwal kegiatan.",
+      en: "School academic data metrics monitoring dashboard, student activity visualization, and event schedule management."
+    },
+    problem: {
+      id: "Visualisasi data akademis kompleks yang sulit dibaca oleh staf pengajar.",
+      en: "Complex academic data visualization that is hard to read for teaching staff."
+    },
+    impact: {
+      id: "Menyederhanakan pemantauan data akademik dengan waktu pemuatan widget dashboard under 1 detik.",
+      en: "Simplified academic data monitoring with dashboard widget load times under 1 second."
+    },
     tech: ["React.js", "Chart.js", "Tailwind CSS", "TypeScript"],
     demoUrl: "",
     repoUrl: ""
@@ -459,4 +514,5 @@ export async function DELETE(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
