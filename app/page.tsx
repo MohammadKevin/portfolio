@@ -35,6 +35,7 @@ const catIcons: Record<string, React.ReactNode> = {
   backend:           <Server   className="w-4 h-4" />,
   database:          <Database className="w-4 h-4" />,
   frontend:          <Code2    className="w-4 h-4" />,
+  tooling:           <Wrench   className="w-4 h-4" />,
   "tools-secondary": <Wrench   className="w-4 h-4" />,
 };
 
@@ -51,7 +52,6 @@ function LevelBadge({ tag }: { tag: string }) {
 /* ── Scroll Reveal ── */
 function useReveal() {
   useEffect(() => {
-    const els = document.querySelectorAll(".reveal");
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -60,8 +60,17 @@ function useReveal() {
       },
       { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
-    els.forEach((el) => obs.observe(el));
-    return () => obs.disconnect();
+
+    const observeAll = () => {
+      document.querySelectorAll(".reveal:not(.visible)").forEach((el) => obs.observe(el));
+    };
+    observeAll();
+
+    // Re-observe when new .reveal elements are added (tab switches, async data)
+    const mo = new MutationObserver(() => observeAll());
+    mo.observe(document.body, { childList: true, subtree: true });
+
+    return () => { obs.disconnect(); mo.disconnect(); };
   }, []);
 }
 
@@ -144,12 +153,34 @@ export default function Home() {
 
   useEffect(() => {
     fetch("/api/certificates").then(r=>r.json())
-      .then(d => { if(d.success && d.certificates?.length) setCerts(d.certificates); })
+      .then(d => {
+        if(d.success && d.certificates?.length) {
+          // Normalize credentialUrl → url for frontend rendering
+          const normalized = d.certificates.map((c: Record<string, unknown>) => ({
+            ...c,
+            url: c.url || c.credentialUrl || c.credential_url || "",
+            skills: Array.isArray(c.skills) ? c.skills : [],
+          }));
+          setCerts(normalized);
+        }
+      })
       .catch(()=>{});
   }, []);
   useEffect(() => {
     fetch("/api/projects").then(r=>r.json())
-      .then(d => { if(d.success && d.projects?.length) setProjectsList(d.projects); })
+      .then(d => {
+        if(d.success && d.projects?.length) {
+          // Normalize & safety-check fields from API/Supabase
+          const normalized = d.projects.map((p: Record<string, unknown>) => ({
+            ...p,
+            tech: Array.isArray(p.tech) ? p.tech : [],
+            demoUrl: (p.demoUrl || p.demo_url || "") as string,
+            repoUrl: (p.repoUrl || p.repo_url || "") as string,
+            type: p.type || "Fullstack",
+          }));
+          setProjectsList(normalized);
+        }
+      })
       .catch(()=>{});
   }, []);
   useEffect(() => {
@@ -186,14 +217,17 @@ export default function Home() {
 
   const filterLabels = ["All", "Backend", "Frontend", "Fullstack"];
   const filtered = projectsList.filter(p => {
-    const matchCat = activeCategory === "All" || p.type.toLowerCase() === activeCategory.toLowerCase();
+    if (!p.title) return false; // skip incomplete projects from API
+    const pType = (p.type || "").toLowerCase();
+    const matchCat = activeCategory === "All" || pType === activeCategory.toLowerCase();
     const q = searchQuery.toLowerCase();
     const descStr = typeof p.desc === "string" ? p.desc : (p.desc?.[lang] || "");
     const probStr = typeof p.problem === "string" ? p.problem : (p.problem?.[lang] || "");
+    const techArr = Array.isArray(p.tech) ? p.tech : [];
     const matchQ = !q || p.title.toLowerCase().includes(q)
       || descStr.toLowerCase().includes(q)
       || probStr.toLowerCase().includes(q)
-      || p.tech.some(t => t.toLowerCase().includes(q));
+      || techArr.some(t => t.toLowerCase().includes(q));
     return matchCat && matchQ;
   });
 
@@ -522,7 +556,7 @@ export default function Home() {
                   )}
 
                   <div className="flex flex-wrap gap-1.5 mt-auto">
-                    {item.tech.map(t => <span key={t} className="tech-pill">{t}</span>)}
+                    {Array.isArray(item.tech) && item.tech.map(t => <span key={t} className="tech-pill">{t}</span>)}
                   </div>
 
                   {(item.demoUrl || item.repoUrl) && (

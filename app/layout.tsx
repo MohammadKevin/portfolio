@@ -18,6 +18,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://corecraft.my.id'),
   title: "Mohammad Kevin | Backend & Fullstack Developer",
   description:
     "Portfolio of Mohammad Kevin, Fullstack & Backend Developer based in Malang, Indonesia. Specializing in Next.js, NestJS, Express, Prisma, PostgreSQL, and MySQL.",
@@ -34,7 +35,46 @@ export const metadata: Metadata = {
     "PostgreSQL",
     "MySQL",
     "Terminal Portfolio",
+    "corecraft",
   ].join(", "),
+  authors: [{ name: "Mohammad Kevin" }],
+  creator: "Mohammad Kevin",
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    url: "https://corecraft.my.id",
+    title: "Mohammad Kevin | Backend & Fullstack Developer",
+    description: "Portfolio of Mohammad Kevin, Fullstack & Backend Developer based in Malang, Indonesia.",
+    siteName: "Mohammad Kevin Portfolio",
+    images: [
+      {
+        url: "/images/logo.png", // We can use the existing logo for OG image, or a specific OG image if available
+        width: 800,
+        height: 600,
+        alt: "Mohammad Kevin Portfolio",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mohammad Kevin | Backend & Fullstack Developer",
+    description: "Portfolio of Mohammad Kevin, Fullstack & Backend Developer based in Malang, Indonesia.",
+    images: ["/images/logo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: "https://corecraft.my.id",
+  },
 };
 
 export default function RootLayout({
