@@ -75,6 +75,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://corecraft.my.id",
   },
+  verification: {
+    google: "Ql3s20yhLdCaRpqDF5mz_7W3KDBTAOFCTs2sx9QrXvc",
+  },
 };
 
 export default function RootLayout({
