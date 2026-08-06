@@ -59,6 +59,6 @@ export const timelineLogs: TimelineLog[] = [
       { id: "Membangun proyek sistem arsip digital berbasis web.", en: "Built a web-based digital archive system project." },
       { id: "Lulus dengan nilai kompetensi sangat baik.", en: "Graduated with excellent competency scores." }
     ],
-    tech: ["PHP", "Laravel", "MySQL", "JavaScript"],
+    tech: ["PHP", "Node.js", "MySQL", "JavaScript"],
   },
 ];

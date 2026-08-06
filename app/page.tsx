@@ -248,7 +248,7 @@ export default function Home() {
                   <Image
                     src="/images/logo.png" alt="Mohammad Kevin" fill
                     sizes="(max-width: 768px) 224px, 256px"
-                    className="object-cover" priority
+                    className="object-cover object-top" priority
                   />
                 </div>
               </div>
@@ -335,7 +335,7 @@ export default function Home() {
 
                 <div className="flex items-center gap-4">
                   <div className="photo-ring w-14 h-14 relative shrink-0">
-                    <Image src="/images/logo.png" alt="Kevin" fill sizes="56px" className="object-cover"/>
+                    <Image src="/images/logo.png" alt="Kevin" fill sizes="56px" className="object-cover object-top"/>
                   </div>
                   <div>
                     <p className="font-bold text-white">Mohammad Kevin Arif Rudianto</p>
@@ -397,7 +397,7 @@ export default function Home() {
               <div className="card-flat rounded-2xl p-5 flex flex-col gap-3">
                 <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">{ab.stackLabel[lang]}</p>
                 <div className="flex flex-wrap gap-2">
-                  {["Next.js","NestJS","Express","Prisma","PostgreSQL","MySQL","TypeScript","Redis","Tailwind CSS"].map(t => (
+                  {["Next.js","NestJS","Express","Prisma","PostgreSQL","MySQL","TypeScript","Tailwind CSS"].map(t => (
                     <span key={t} className="tech-pill">{t}</span>
                   ))}
                 </div>

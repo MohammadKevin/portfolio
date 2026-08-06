@@ -59,15 +59,15 @@ export const skillCategories: SkillCategory[] = [
         ],
       },
       {
-        name: "Laravel (PHP)",
+        name: "Node.js",
         level: 70,
         levelTag: "Intermediate",
         desc: {
-          id: "Pengembangan sistem MVC monolith legacy (kemampuan sekunder / maintainer).",
-          en: "Legacy monolithic MVC system development (secondary/maintainer capability)."
+          id: "Pengembangan sistem backend dan REST API (kemampuan sekunder).",
+          en: "Backend system and REST API development (secondary capability)."
         },
         achievements: [
-          { id: "Memahami struktur MVC tradisional", en: "Understanding traditional MVC structures" }
+          { id: "Memahami struktur runtime JavaScript", en: "Understanding JavaScript runtime structures" }
         ],
       },
     ],

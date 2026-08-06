@@ -78,7 +78,7 @@ export const translations = {
     primaryStack:   { id: "Primary Stack",       en: "Primary Stack" },
     database:       { id: "Database",            en: "Database" },
     extra:          { id: "Extra",               en: "Extra" },
-    extraVal:       { id: "Laravel / PHP (legacy)", en: "Laravel / PHP (legacy)" },
+    extraVal:       { id: "Node.js (Backend)", en: "Node.js (Backend)" },
     openFreelance:  { id: "Buka untuk freelance",  en: "Open for freelance" },
     stackLabel:     { id: "Stack yang saya kuasai", en: "My Tech Stack" },
   },

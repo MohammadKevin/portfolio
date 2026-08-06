@@ -63,8 +63,8 @@ export const whoamiData: SystemInfo = {
     },
     { 
       label: "SKILL SEKUNDER", 
-      value: "Laravel", 
-      subtext: { id: "Pengalaman monolith legacy PHP", en: "Legacy monolith PHP experience" }
+      value: "Node.js", 
+      subtext: { id: "Pengalaman runtime JavaScript", en: "JavaScript runtime experience" }
     },
   ],
   contactLinks: {

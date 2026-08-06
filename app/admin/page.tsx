@@ -901,7 +901,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     required
-                    placeholder="React.js, Laravel, MySQL, Tailwind CSS"
+                    placeholder="React.js, Node.js, MySQL, Tailwind CSS"
                     value={formTech}
                     onChange={(e) => setFormTech(e.target.value)}
                     className="px-4 py-2.5 rounded-xl border border-white/5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs text-white bg-slate-950/60"
