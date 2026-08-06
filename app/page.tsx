@@ -803,7 +803,7 @@ export default function Home() {
             <div className="lg:col-span-2 flex flex-col gap-4 reveal">
               <div className="card-flat rounded-2xl p-5 flex items-center gap-4">
                 <div className="photo-ring w-14 h-14 relative shrink-0">
-                  <Image src="/images/logo.png" alt="Kevin" fill sizes="56px" className="object-cover"/>
+                  <Image src="/images/icon.png" alt="Kevin" fill sizes="56px" className="object-cover"/>
                 </div>
                 <div>
                   <p className="font-bold text-white">Mohammad Kevin</p>

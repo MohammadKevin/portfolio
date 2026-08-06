@@ -84,7 +84,7 @@ export default function Navbar() {
           <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20
             group-hover:border-[var(--accent-border)] transition-all">
             <Image
-              src="/images/logo.png"
+              src="/images/icon.png"
               alt="Kevin"
               width={32}
               height={32}

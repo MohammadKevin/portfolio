@@ -63,7 +63,7 @@ export default function Footer() {
           <div className="md:col-span-5 flex flex-col gap-4">
             <div className="flex items-center gap-3">
               <div className="photo-ring w-11 h-11 relative">
-                <Image src="/images/logo.png" alt="Kevin" fill sizes="44px" className="object-cover" />
+                <Image src="/images/icon.png" alt="Kevin" fill sizes="44px" className="object-cover" />
               </div>
               <div>
                 <p className="font-bold text-white">Mohammad Kevin</p>
