@@ -14,8 +14,24 @@ export interface TimelineLog {
 
 export const timelineLogs: TimelineLog[] = [
   {
-    id: "log-1",
-    year: "2024 - Sekarang",
+    id: "log-3",
+    year: "2025",
+    role: { id: "Quality Assurance", en: "Quality Assurance" },
+    org: "SIDIGS",
+    type: "project",
+    summary: { 
+      id: "Melakukan pengujian aplikasi untuk memastikan fitur berjalan sesuai kebutuhan dan bebas dari bug.", 
+      en: "Tested applications to ensure features run as required and are free from bugs." 
+    },
+    achievements: [
+      { id: "Menyelesaikan pengujian fungsional dan pelaporan bug secara terstruktur.", en: "Completed functional testing and structured bug reporting." },
+      { id: "Berkolaborasi dengan tim developer untuk memastikan kualitas produk.", en: "Collaborated with developer team to ensure product quality." }
+    ],
+    tech: ["Manual Testing", "Postman", "Bug Tracking"],
+  },
+  {
+    id: "log-2",
+    year: "2025 - Sekarang",
     role: { id: "Freelance & Backend Developer", en: "Freelance & Backend Developer" },
     org: "Independent",
     type: "project",
@@ -30,8 +46,8 @@ export const timelineLogs: TimelineLog[] = [
     tech: ["Next.js", "NestJS", "PostgreSQL", "Prisma"],
   },
   {
-    id: "log-2",
-    year: "2021 - 2024",
+    id: "log-1",
+    year: "2024 - sekarang",
     role: { id: "Siswa Rekayasa Perangkat Lunak", en: "Software Engineering Student" },
     org: "SMK Telkom Malang",
     type: "academic",

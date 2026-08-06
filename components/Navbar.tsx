@@ -97,7 +97,7 @@ export default function Navbar() {
         </Link>
 
         {/* ── Desktop Nav ─────────────────── */}
-        <nav className="hidden md:flex items-center gap-0.5">
+        <nav className="hidden lg:flex items-center gap-0.5">
           {navItems.map((item) => {
             const id = item.href.replace("#", "");
             const active = activeSection === id;
@@ -118,38 +118,31 @@ export default function Navbar() {
         </nav>
 
         {/* ── Right Controls ──────────────── */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2 sm:gap-3">
 
           {/* ── Language Toggle ──── */}
-          <button
-            id="lang-toggle-btn"
-            onClick={() => setLang(lang === "id" ? "en" : "id")}
-            title={lang === "id" ? "Switch to English" : "Ganti ke Indonesia"}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
-              border border-white/10 hover:border-[var(--accent-border)]
-              hover:bg-[var(--accent-muted)] transition-all duration-200 group"
-            aria-label="Toggle language"
-          >
-            {lang === "id" ? (
-              <>
-                <span className="text-base leading-none">🇮🇩</span>
-                <span className="text-xs font-bold text-slate-400 group-hover:text-[var(--accent-light)] transition-colors">
-                  ID
-                </span>
-                <span className="text-slate-700 text-xs">/</span>
-                <span className="text-xs text-slate-600 group-hover:text-slate-400 transition-colors">EN</span>
-              </>
-            ) : (
-              <>
-                <span className="text-base leading-none">🇬🇧</span>
-                <span className="text-xs font-bold text-slate-400 group-hover:text-[var(--accent-light)] transition-colors">
-                  EN
-                </span>
-                <span className="text-slate-700 text-xs">/</span>
-                <span className="text-xs text-slate-600 group-hover:text-slate-400 transition-colors">ID</span>
-              </>
-            )}
-          </button>
+          <div className="flex items-center bg-white/5 rounded-lg border border-white/10 p-0.5">
+            <button
+              onClick={() => setLang("id")}
+              className={`px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${
+                lang === "id" 
+                  ? "bg-[var(--accent-muted)] text-[var(--accent-light)] border border-[var(--accent-border)]" 
+                  : "text-slate-400 hover:text-white border border-transparent"
+              }`}
+            >
+              ID
+            </button>
+            <button
+              onClick={() => setLang("en")}
+              className={`px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${
+                lang === "en" 
+                  ? "bg-[var(--accent-muted)] text-[var(--accent-light)] border border-[var(--accent-border)]" 
+                  : "text-slate-400 hover:text-white border border-transparent"
+              }`}
+            >
+              EN
+            </button>
+          </div>
 
           {/* ── Theme Switcher ───── */}
           <div className="relative">
@@ -157,11 +150,10 @@ export default function Navbar() {
               id="theme-toggle-btn"
               onClick={() => setThemeOpen(!themeOpen)}
               title="Ganti tema warna"
-              className="p-2 rounded-lg text-slate-500 hover:text-white hover:bg-white/5
-                transition-all border border-transparent hover:border-white/10"
+              className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-[var(--accent-light)] bg-white/5 hover:bg-[var(--accent-muted)] border border-white/10 hover:border-[var(--accent-border)] transition-all"
               aria-label="Theme switcher"
             >
-              <Palette className="w-4 h-4" />
+              <Palette className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
             {themeOpen && (
@@ -204,7 +196,7 @@ export default function Navbar() {
           <a
             href="#contact"
             id="navbar-cta"
-            className="hidden md:inline-flex btn-accent text-sm px-4 py-2 rounded-lg"
+            className="hidden sm:inline-flex btn-accent text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg"
           >
             {n.hireMe[lang]}
           </a>
@@ -213,17 +205,17 @@ export default function Navbar() {
           <button
             id="mobile-menu-btn"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 border border-white/8 transition-all"
+            className="lg:hidden p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-[var(--accent-light)] bg-white/5 hover:bg-[var(--accent-muted)] border border-white/10 hover:border-[var(--accent-border)] transition-all"
             aria-label="Toggle menu"
           >
-            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {menuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
           </button>
         </div>
       </div>
 
       {/* ── Mobile Menu ─────────────────── */}
       {menuOpen && (
-        <div className="md:hidden mx-3 mb-3 card-flat p-3 flex flex-col gap-1 border border-white/8">
+        <div className="lg:hidden mx-3 mb-3 card-flat p-3 flex flex-col gap-1 border border-white/8">
           {navItems.map((item) => {
             const id = item.href.replace("#", "");
             const active = activeSection === id;
@@ -242,7 +234,7 @@ export default function Navbar() {
               </a>
             );
           })}
-          <div className="mt-1 pt-2 border-t border-white/6">
+          <div className="mt-1 pt-2 border-t border-white/6 sm:hidden">
             <a
               href="#contact"
               onClick={() => setMenuOpen(false)}
