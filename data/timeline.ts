@@ -15,7 +15,7 @@ export interface TimelineLog {
 export const timelineLogs: TimelineLog[] = [
   {
     id: "log-3",
-    year: "2025",
+    year: "2026 - Sekarang",
     role: { id: "Quality Assurance", en: "Quality Assurance" },
     org: "SIDIGS",
     type: "project",

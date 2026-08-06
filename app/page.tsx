@@ -757,7 +757,9 @@ export default function Home() {
                       <p className="text-xs text-slate-600 font-mono mt-0.5">{log.role[lang]}</p>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-slate-500 font-mono">{log.year}</span>
+                      <span className="text-xs text-slate-500 font-mono">
+                        {lang === "en" ? log.year.replace(/sekarang/i, "Present") : log.year}
+                      </span>
                       <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold border ${
                         log.type === "academic"
                           ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
