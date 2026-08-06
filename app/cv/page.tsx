@@ -29,8 +29,8 @@ export default function CVPage() {
   const { lang } = useLanguage();
   const tr = translations;
   
-  // Filter timeline for experience and academic
-  const experiences = timelineLogs.filter(t => t.type === "experience");
+  // Filter timeline for experience (projects) and academic
+  const experiences = timelineLogs.filter(t => t.type === "project" || t.type === "achievement");
   const academics = timelineLogs.filter(t => t.type === "academic");
 
   return (
