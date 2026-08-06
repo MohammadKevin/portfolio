@@ -418,3 +418,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════
+   PRINT STYLES
+═══════════════════════════════════════════════════ */
+@media print {
+  header, footer, #theme-toggle-btn {
+    display: none !important;
+  }
+  @page { margin: 0; }
+  body { 
+    background: white !important; 
+    color: black !important;
+  }
+}
+

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { send as sendEmail } from "@emailjs/browser";
 import {
   MapPin, Mail, Phone, Send, Download, ExternalLink,
@@ -140,7 +141,6 @@ export default function Home() {
   const [searchQuery,    setSearchQuery]    = useState("");
   const [activeTab,      setActiveTab]      = useState("backend");
   const [copiedEmail,    setCopiedEmail]    = useState(false);
-  const [resumeOpen,     setResumeOpen]     = useState(false);
   const [certs,          setCerts]          = useState<Certificate[]>(certificatesData);
   const [form,           setForm]           = useState({ name: "", email: "", message: "" });
   const [formStatus,     setFormStatus]     = useState<"idle"|"loading"|"success"|"error">("idle");
@@ -296,9 +296,12 @@ export default function Home() {
                 <a href="#contact" id="hero-contact-btn" className="btn-accent rounded-xl text-sm">
                   <Mail className="w-4 h-4" />{h.contactBtn[lang]}
                 </a>
-                <button id="hero-cv-btn" onClick={() => setResumeOpen(true)} className="btn-ghost rounded-xl text-sm">
+                <a href="/CV%20Mohammad%20Kevin.pdf" target="_blank" rel="noopener noreferrer" download="CV Mohammad Kevin.pdf" id="hero-cv-btn" className="btn-ghost rounded-xl text-sm">
                   <Download className="w-4 h-4" />{h.cvBtn[lang]}
-                </button>
+                </a>
+                <Link href="/cv" className="btn-ghost rounded-xl text-sm">
+                  <FileText className="w-4 h-4" />{lang === "id" ? "CV Digital" : "Digital CV"}
+                </Link>
                 <a href="https://github.com/MohammadKevin" target="_blank" rel="noopener noreferrer"
                   id="hero-github-btn" className="btn-ghost rounded-xl text-sm px-3.5">
                   <GithubIcon className="w-4 h-4" />
@@ -946,66 +949,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════════════ CV MODAL ══════════════ */}
-      {resumeOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm"
-          onClick={e => e.target === e.currentTarget && setResumeOpen(false)}
-        >
-          <div className="card-flat rounded-2xl max-w-md w-full border border-white/10 shadow-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[var(--accent-muted)] border border-[var(--accent-border)] flex items-center justify-center">
-                  <FileText className="w-4 h-4 text-[var(--accent-light)]"/>
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-white">{cv.title[lang]}</p>
-                  <p className="text-[10px] text-slate-600">Mohammad Kevin Arif Rudianto</p>
-                </div>
-              </div>
-              <button onClick={() => setResumeOpen(false)}
-                className="text-slate-500 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/5">
-                <XCircle className="w-5 h-5"/>
-              </button>
-            </div>
 
-            <div className="p-6 flex flex-col gap-5">
-              <div className="flex items-center gap-4">
-                <div className="photo-ring w-14 h-14 relative shrink-0">
-                  <Image src="/images/logo.png" alt="Kevin" fill sizes="56px" className="object-cover"/>
-                </div>
-                <div>
-                  <p className="font-bold text-white">Mohammad Kevin Arif Rudianto</p>
-                  <p className="text-sm text-[var(--accent-light)]">{cv.role[lang]}</p>
-                  <p className="text-xs text-slate-600 mt-0.5">{cv.school[lang]}</p>
-                </div>
-              </div>
-
-              <div className="divider"/>
-
-              <div className="flex flex-col gap-2.5">
-                {[cv.item1[lang], cv.item2[lang], cv.item3[lang], cv.item4[lang]].map((item, i) => (
-                  <div key={i} className="flex items-start gap-2.5 text-sm text-slate-400">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"/>{item}
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-1">
-                <a href="/CV%20Mohammad%20Kevin.pdf" target="_blank" rel="noopener noreferrer"
-                  download="CV Mohammad Kevin.pdf"
-                  className="btn-accent flex-1 justify-center text-sm py-2.5 rounded-xl">
-                  <Download className="w-4 h-4"/>{cv.downloadBtn[lang]}
-                </a>
-                <a href="#contact" onClick={() => setResumeOpen(false)}
-                  className="btn-ghost flex-1 justify-center text-sm py-2.5 rounded-xl">
-                  {cv.contactBtn[lang]}
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
     </main>
   );
