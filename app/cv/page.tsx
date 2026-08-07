@@ -30,11 +30,11 @@ export default function CVPage() {
   const tr = translations;
   
   // Filter timeline for experience (projects) and academic
-  const experiences = timelineLogs.filter(t => t.type === "project" || t.type === "achievement");
+  const experiences = timelineLogs.filter(t => t.type === "project" || t.type === "achievement" || t.type === "magang");
   const academics = timelineLogs.filter(t => t.type === "academic");
 
   return (
-    <div className="min-h-screen bg-[#080f1e] text-slate-300 font-sans print:bg-white print:text-black py-10 print:py-0">
+    <div className="min-h-screen bg-[#080f1e] text-slate-300 font-sans print:bg-white print:text-black pt-24 pb-10 print:py-0">
       
       {/* Controls (Hidden on Print) */}
       <div className="max-w-4xl mx-auto px-6 mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 print:hidden">
@@ -121,7 +121,7 @@ export default function CVPage() {
                         </p>
                       </div>
                       <span className="text-xs font-mono text-slate-500 print:text-gray-500 whitespace-nowrap bg-white/5 print:bg-gray-100 px-2 py-1 rounded-md">
-                        {exp.year}
+                        {lang === "en" ? exp.year.replace(/sekarang/i, "Present") : exp.year}
                       </span>
                     </div>
                     {exp.summary && (
@@ -159,7 +159,7 @@ export default function CVPage() {
                         </p>
                       </div>
                       <span className="text-xs font-mono text-slate-500 print:text-gray-500 whitespace-nowrap bg-white/5 print:bg-gray-100 px-2 py-1 rounded-md">
-                        {edu.year}
+                        {lang === "en" ? edu.year.replace(/sekarang/i, "Present") : edu.year}
                       </span>
                     </div>
                     {edu.summary && (

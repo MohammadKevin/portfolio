@@ -5,7 +5,7 @@ export interface TimelineLog {
   year: string;
   role: LocalizedString;
   org: string;
-  type: "academic" | "project" | "achievement";
+  type: "academic" | "project" | "achievement" | "magang";
   summary: LocalizedString;
   achievements: LocalizedString[];
   tech?: string[];
@@ -18,7 +18,7 @@ export const timelineLogs: TimelineLog[] = [
     year: "2026 - Sekarang",
     role: { id: "Quality Assurance", en: "Quality Assurance" },
     org: "SIDIGS",
-    type: "project",
+    type: "magang",
     summary: { 
       id: "Melakukan pengujian aplikasi untuk memastikan fitur berjalan sesuai kebutuhan dan bebas dari bug.", 
       en: "Tested applications to ensure features run as required and are free from bugs." 

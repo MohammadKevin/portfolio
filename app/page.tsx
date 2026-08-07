@@ -767,7 +767,14 @@ export default function Home() {
                         log.type === "academic"
                           ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
                           : "bg-blue-500/10 border-blue-500/20 text-blue-400"
-                      }`}>{log.type}</span>
+                      }`}>
+                        {{
+                          academic: lang === "id" ? "Akademik" : "Academic",
+                          project: lang === "id" ? "Proyek" : "Project",
+                          achievement: lang === "id" ? "Pencapaian" : "Achievement",
+                          magang: lang === "id" ? "Magang" : "Internship"
+                        }[log.type] || log.type}
+                      </span>
                     </div>
                   </div>
                   <div className="callout text-sm">{log.summary[lang]}</div>
