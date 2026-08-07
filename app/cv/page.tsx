@@ -37,14 +37,14 @@ export default function CVPage() {
     <div className="min-h-screen bg-[#080f1e] text-slate-300 font-sans print:bg-white print:text-black py-10 print:py-0">
       
       {/* Controls (Hidden on Print) */}
-      <div className="max-w-4xl mx-auto px-6 mb-6 flex items-center justify-between print:hidden">
-        <Link href="/" className="btn-ghost px-4 py-2 rounded-xl text-sm flex items-center gap-2">
+      <div className="max-w-4xl mx-auto px-6 mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 print:hidden">
+        <Link href="/" className="btn-ghost px-4 py-2 rounded-xl text-sm flex items-center justify-center sm:justify-start gap-2">
           <ArrowLeft className="w-4 h-4" />
           {lang === "id" ? "Kembali ke Beranda" : "Back to Home"}
         </Link>
         <button 
           onClick={() => window.print()}
-          className="btn-accent px-4 py-2 rounded-xl text-sm flex items-center gap-2"
+          className="btn-accent px-4 py-2 rounded-xl text-sm flex items-center justify-center gap-2"
         >
           <Printer className="w-4 h-4" />
           {lang === "id" ? "Cetak PDF" : "Print PDF"}
